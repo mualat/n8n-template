@@ -1,0 +1,629 @@
+{
+  "name": "AI Automation Clipper Viral 2",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Automation YT Video",
+        "formDescription": "Ketik Link dibawah ini dan kita buat automasinya",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Link Youtube",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Jumlah Short yang mau dibuat",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Durasi Minimum",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Durasi Maksimum",
+              "fieldType": "number",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -176,
+        368
+      ],
+      "id": "7df83bef-a1e8-473b-a44a-61d6197128c5",
+      "name": "On form submission",
+      "webhookId": "79485d41-3da4-4d0d-959c-362b335855e9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7ac41f4b-246e-4ff0-8a56-1ab0dbe5e771",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ready",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        48
+      ],
+      "id": "48a069af-7b0e-446a-b9d3-a48e6eb0fccf",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.klap.app/v2/tasks/video-to-shorts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"source_video_url\": \"{{ $json['Link Youtube'] }}\",\n  \"language\": \"id\",\n  \"target_clip_count\": {{ $json['Jumlah Short yang mau dibuat'] }},\n  \"max_clip_count\": {{ $json['Jumlah Short yang mau dibuat'] }},\n  \"editing_options\": {\n    \"captions\": true,\n    \"reframe\": true,\n    \"emojis\": true,\n    \"remove_silences\": true,\n    \"intro_title\": false\n  },\n  \"min_duration\": 30,\n  \"max_duration\": 120,\n  \"target_duration\": 30\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        48,
+        48
+      ],
+      "id": "5b535815-5d82-4ff3-b00e-12e73d44563e",
+      "name": "Analisa Video"
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        48
+      ],
+      "id": "64cfb7d4-23e5-488d-8ebf-f68c03e2db07",
+      "name": "Wait",
+      "webhookId": "ad119ed4-3c4b-4597-8aec-cb5fb3b37b2a"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.klap.app/v2/tasks/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        208,
+        48
+      ],
+      "id": "02306986-885d-4651-ac94-f91ad9e671c5",
+      "name": "Cek Status Analisa Video"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.klap.app/v2/projects/{{ $json.output_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        48,
+        240
+      ],
+      "id": "f503ae45-895d-4aa3-9e46-22db4bb01bbf",
+      "name": "Shorts Idea"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.klap.app/v2/projects/{{ $('If').item.json.output_id }}/{{ $json.id }}/exports",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        208,
+        240
+      ],
+      "id": "f01220eb-6553-4801-9e43-b9fc007ee948",
+      "name": "Video Kualitas Tinggi"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.klap.app/v2/projects/{{ $('If').item.json.output_id }}/{{ $('Shorts Idea').item.json.id }}/exports/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        352,
+        240
+      ],
+      "id": "2bc133f6-f894-43a9-930a-69ab02eb88a9",
+      "name": "Ambil Video"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mengambil semua data video yang masuk dari node sebelumnya\nconst items = $input.all();\n\n// Menentukan tanggal mulai (Hari ini)\nlet scheduleDate = new Date();\n\n// Loop untuk setiap video (item)\nfor (let i = 0; i < items.length; i++) {\n  \n  // Tambahkan 1 hari untuk setiap video (Mulai dari besok)\n  scheduleDate.setDate(scheduleDate.getDate() + 1);\n  \n  // Format tanggal menjadi ISO String (agar diterima API)\n  // Masukkan ke dalam JSON item tersebut\n  items[i].json.scheduleDate = scheduleDate.toISOString();\n}\n\n// --- BAGIAN INI YANG TADI KURANG ---\n// Kembalikan data yang sudah diedit ke n8n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        912
+      ],
+      "id": "89c3fd45-e90a-45fb-8ec1-0281674eb488",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "38e0209c-8f87-46cf-9157-3e118e25febb",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ready",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        496,
+        240
+      ],
+      "id": "2f23c6d2-d166-464b-a6aa-cf34147f1175",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "content": "## Data Link Video & Short yang mau dibuat\n\n\n",
+        "height": 288,
+        "width": 192,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -224,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "bcf29b22-b84d-4c6c-bf55-f83c1b388bee",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Proses Pembuatan Video Clip\n\n\n\n",
+        "height": 432,
+        "width": 800,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "9a8d6475-eb20-4bb4-bb0c-712770ad0291",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Hasil Link & Data Clipper (Caption Instagram, Tiktok, Youtube, Linkenid, Virality Score)\n\n\n\n\n\n",
+        "height": 272,
+        "width": 800,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        432
+      ],
+      "typeVersion": 1,
+      "id": "3d5e066f-581f-45e8-aa5c-477e6a0b22f7",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        240
+      ],
+      "id": "920f041d-5ddd-4c41-bc91-26a1d94053fb",
+      "name": "Wait1",
+      "webhookId": "c93555d6-ead2-4752-98af-7372506bc8f4"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.klap.app/v2/projects/{{ $json.folder_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        48,
+        528
+      ],
+      "id": "b6ca6cc5-e0d7-406d-a293-4ec66106f64a",
+      "name": "Ambil Link Video & Caption Sosmed",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rQFR1d07QOQVEEXV",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1okWb5hcQPZFMQL3EMqb7zs2cGYVaFFB9H3blRB8Lj4Q",
+          "mode": "list",
+          "cachedResultName": "AI Clip Video automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1okWb5hcQPZFMQL3EMqb7zs2cGYVaFFB9H3blRB8Lj4Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1okWb5hcQPZFMQL3EMqb7zs2cGYVaFFB9H3blRB8Lj4Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Judul Video": "={{ $json.name }}",
+            "Link Download Video": "={{ $('If1').item.json.src_url }}",
+            "Status": "={{ $('If1').item.json.status }}",
+            "Virality Score": "={{ $json.virality_score }}",
+            "Alasannya": "={{ $json.virality_score_explanation }}",
+            "Caption Tiktok": "={{ $json.publication_captions.tiktok }}",
+            "Caption Youtube": "={{ $json.publication_captions.youtube }}",
+            "Caption Linkedin": "={{ $json.publication_captions.linkedin }}",
+            "Caption Instagram": "={{ $json.publication_captions.instagram }}"
+          },
+          "matchingColumns": [
+            "Judul Video"
+          ],
+          "schema": [
+            {
+              "id": "Judul Video",
+              "displayName": "Judul Video",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Link Download Video",
+              "displayName": "Link Download Video",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Virality Score",
+              "displayName": "Virality Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Alasannya",
+              "displayName": "Alasannya",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Caption Tiktok",
+              "displayName": "Caption Tiktok",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Caption Youtube",
+              "displayName": "Caption Youtube",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Caption Linkedin",
+              "displayName": "Caption Linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Caption Instagram",
+              "displayName": "Caption Instagram",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        528
+      ],
+      "id": "f14a9f6f-ea3d-4060-9d37-9c3d80e6f04f",
+      "name": "Rekapan Link & Data Sosmed",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Ve0ttJVwgaeGGN0j",
+          "name": "Google Sheets account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Analisa Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analisa Video": {
+      "main": [
+        [
+          {
+            "node": "Cek Status Analisa Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Shorts Idea",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Cek Status Analisa Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cek Status Analisa Video": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shorts Idea": {
+      "main": [
+        [
+          {
+            "node": "Video Kualitas Tinggi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Kualitas Tinggi": {
+      "main": [
+        [
+          {
+            "node": "Ambil Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ambil Video": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Ambil Link Video & Caption Sosmed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Ambil Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ambil Link Video & Caption Sosmed": {
+      "main": [
+        [
+          {
+            "node": "Rekapan Link & Data Sosmed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c7a86d19-54e4-4671-8028-53a0cb6000e1",
+  "meta": {
+    "instanceId": "d153726fd13f0bdfe13f62091867607e3c496cb3528dc07310a8da7ad56ac1b4"
+  },
+  "id": "oFDU9bXck9MPvWrM",
+  "tags": []
+}
