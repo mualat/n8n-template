@@ -1,1 +1,277 @@
-"{\n  \"name\": \"Image Analyzer with unli.dev\",\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"chatId\": \"={{ $('Telegram Trigger').item.json.message.chat.id }}\",\n        \"text\": \"=📸 **Image Analysis Result**\\n\\n{{ $json.choices[0].message.content }}\\n\\nModel: {{ $json.model }}\\nprompt tokens: {{ $json.usage.prompt_tokens }}\\ncompletion tokens: {{ $json.usage.completion_tokens }}\",\n        \"additionalFields\": {\n          \"parse_mode\": \"Markdown\"\n        }\n      },\n      \"type\": \"n8n-nodes-base.telegram\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        528,\n        416\n      ],\n      \"id\": \"311a97ac-7c23-4fae-8572-bdd869e44460\",\n      \"name\": \"📤 Send Response\",\n      \"webhookId\": \"ebeb27ef-0f91-4313-ad5c-e60de9e7b80e\",\n      \"credentials\": {\n        \"telegramApi\": {\n          \"id\": \"wlH3um2hoPAGI8XX\",\n          \"name\": \"Khaisa Dev Bot\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"jsCode\": \"const binaryData = $input.first().binary.data;\\n\\n// Access buffer property and convert to base64\\nconst base64Image = binaryData.data.toString('base64');\\n\\n// Get the caption from the original Telegram message if it exists\\nconst caption = $('Telegram Trigger').item.json.message.caption || 'What is in this image?';\\n\\nreturn [{ \\n  json: { \\n    base64Image: base64Image,\\n    prompt: caption,\\n    chatId: $('Telegram Trigger').item.json.message.chat.id,\\n    messageId: $('Telegram Trigger').item.json.message.message_id\\n  } \\n}];\"\n      },\n      \"type\": \"n8n-nodes-base.code\",\n      \"typeVersion\": 2,\n      \"position\": [\n        -80,\n        416\n      ],\n      \"id\": \"c9bd6275-58e2-4b16-a200-6b8f1070fa1b\",\n      \"name\": \"Convert to Base\"\n    },\n    {\n      \"parameters\": {\n        \"fields\": {\n          \"values\": [\n            {\n              \"name\": \"model\",\n              \"stringValue\": \"auto\"\n            },\n            {\n              \"name\": \"base64Image\",\n              \"stringValue\": \"={{ $json.base64Image }}\"\n            },\n            {\n              \"name\": \"userPrompt\",\n              \"stringValue\": \"extract the trancastion on this image. output in md format\"\n            }\n          ]\n        },\n        \"options\": {}\n      },\n      \"id\": \"49b95148-ca6f-4392-97f3-d664f5d5d273\",\n      \"name\": \"Set Request\",\n      \"type\": \"n8n-nodes-base.set\",\n      \"typeVersion\": 3,\n      \"position\": [\n        128,\n        416\n      ]\n    },\n    {\n      \"parameters\": {\n        \"resource\": \"file\",\n        \"fileId\": \"={{ $('Telegram Trigger').item.json.message.photo[3].file_id }}\",\n        \"additionalFields\": {}\n      },\n      \"type\": \"n8n-nodes-base.telegram\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        -288,\n        416\n      ],\n      \"id\": \"1309d7db-82d3-47d4-99f3-2045664bc78f\",\n      \"name\": \"📥 Download Image\",\n      \"webhookId\": \"7d9d13d4-ec19-40d7-a905-0b44b58867d9\",\n      \"credentials\": {\n        \"telegramApi\": {\n          \"id\": \"wlH3um2hoPAGI8XX\",\n          \"name\": \"Khaisa Dev Bot\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"updates\": [\n          \"message\"\n        ],\n        \"additionalFields\": {}\n      },\n      \"type\": \"n8n-nodes-base.telegramTrigger\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        -496,\n        416\n      ],\n      \"id\": \"50024d75-3377-45ef-95c9-683766b87fa8\",\n      \"name\": \"Telegram Trigger\",\n      \"webhookId\": \"f460f87e-fb6b-4854-a012-46de743f7695\",\n      \"credentials\": {\n        \"telegramApi\": {\n          \"id\": \"wlH3um2hoPAGI8XX\",\n          \"name\": \"Khaisa Dev Bot\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"method\": \"POST\",\n        \"url\": \"https://api.unli.dev/v1/chat/completions\",\n        \"authentication\": \"genericCredentialType\",\n        \"genericAuthType\": \"httpHeaderAuth\",\n        \"sendHeaders\": true,\n        \"headerParameters\": {\n          \"parameters\": [\n            {\n              \"name\": \"Content-Type\",\n              \"value\": \"application/json\"\n            }\n          ]\n        },\n        \"sendBody\": true,\n        \"specifyBody\": \"json\",\n        \"jsonBody\": \"={\\n  \\\"model\\\": \\\"{{ $json.model }}\\\",\\n  \\\"messages\\\": [\\n    {\\n      \\\"role\\\": \\\"user\\\",\\n      \\\"content\\\": [\\n        {\\n          \\\"type\\\": \\\"image_url\\\",\\n          \\\"image_url\\\": {\\n            \\\"url\\\": \\\"data:image/jpeg;base64,{{ $json.base64Image }}\\\"\\n          }\\n        },\\n        {\\n          \\\"type\\\": \\\"text\\\",\\n          \\\"text\\\": \\\"{{ $json.prompt }}\\\"\\n        }\\n      ]\\n    }\\n  ]\\n}\",\n        \"options\": {\n          \"timeout\": 120000\n        }\n      },\n      \"id\": \"03857f42-2145-4a91-b49d-88d0cedb9eb5\",\n      \"name\": \"Call Vision API\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 4.2,\n      \"position\": [\n        336,\n        416\n      ],\n      \"credentials\": {\n        \"httpHeaderAuth\": {\n          \"id\": \"orxLpGp8WTDwNIaF\",\n          \"name\": \"Unli.dev - Jon\"\n        }\n      }\n    }\n  ],\n  \"pinData\": {\n    \"Telegram Trigger\": [\n      {\n        \"json\": {\n          \"update_id\": 602987959,\n          \"message\": {\n            \"message_id\": 11095,\n            \"from\": {\n              \"id\": 621412350,\n              \"is_bot\": false,\n              \"first_name\": \"khairul\",\n              \"username\": \"Khmuhtadin\",\n              \"language_code\": \"en\"\n            },\n            \"chat\": {\n              \"id\": 621412350,\n              \"first_name\": \"khairul\",\n              \"username\": \"Khmuhtadin\",\n              \"type\": \"private\"\n            },\n            \"date\": 1755771042,\n            \"photo\": [\n              {\n                \"file_id\": \"AgACAgUAAxkBAAIrV2im8KIxcwHODUo6awNsS68yvjPxAAJ90TEbFQ45VT_PGhSGK0w_AQADAgADcwADNgQ\",\n                \"file_unique_id\": \"AQADfdExGxUOOVV4\",\n                \"file_size\": 1276,\n                \"width\": 42,\n                \"height\": 90\n              },\n              {\n                \"file_id\": \"AgACAgUAAxkBAAIrV2im8KIxcwHODUo6awNsS68yvjPxAAJ90TEbFQ45VT_PGhSGK0w_AQADAgADbQADNgQ\",\n                \"file_unique_id\": \"AQADfdExGxUOOVVy\",\n                \"file_size\": 16029,\n                \"width\": 148,\n                \"height\": 320\n              },\n              {\n                \"file_id\": \"AgACAgUAAxkBAAIrV2im8KIxcwHODUo6awNsS68yvjPxAAJ90TEbFQ45VT_PGhSGK0w_AQADAgADeAADNgQ\",\n                \"file_unique_id\": \"AQADfdExGxUOOVV9\",\n                \"file_size\": 68479,\n                \"width\": 369,\n                \"height\": 800\n              },\n              {\n                \"file_id\": \"AgACAgUAAxkBAAIrV2im8KIxcwHODUo6awNsS68yvjPxAAJ90TEbFQ45VT_PGhSGK0w_AQADAgADeQADNgQ\",\n                \"file_unique_id\": \"AQADfdExGxUOOVV-\",\n                \"file_size\": 92733,\n                \"width\": 591,\n                \"height\": 1280\n              }\n            ]\n          }\n        }\n      }\n    ]\n  },\n  \"connections\": {\n    \"Convert to Base\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Set Request\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Set Request\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Call Vision API\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"📥 Download Image\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Convert to Base\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Telegram Trigger\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"📥 Download Image\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Call Vision API\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"📤 Send Response\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    }\n  },\n  \"active\": true,\n  \"settings\": {\n    \"executionOrder\": \"v1\"\n  },\n  \"versionId\": \"19150b3b-1dc8-4310-870d-6d735f59214e\",\n  \"meta\": {\n    \"templateCredsSetupCompleted\": true,\n    \"instanceId\": \"c2650793f644091dc80fb900fe63448ad1f4b774008de9608064d67294f8307c\"\n  },\n  \"id\": \"7CdWmTSFuTCbGS5F\",\n  \"tags\": []\n}"
+{
+  "name": "Image Analyzer with unli.dev",
+  "nodes": [
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=📸 **Image Analysis Result**\n\n{{ $json.choices[0].message.content }}\n\nModel: {{ $json.model }}\nprompt tokens: {{ $json.usage.prompt_tokens }}\ncompletion tokens: {{ $json.usage.completion_tokens }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        416
+      ],
+      "id": "311a97ac-7c23-4fae-8572-bdd869e44460",
+      "name": "📤 Send Response",
+      "webhookId": "ebeb27ef-0f91-4313-ad5c-e60de9e7b80e",
+      "credentials": {
+        "telegramApi": {
+          "id": "wlH3um2hoPAGI8XX",
+          "name": "Khaisa Dev Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const binaryData = $input.first().binary.data;\n\n// Access buffer property and convert to base64\nconst base64Image = binaryData.data.toString('base64');\n\n// Get the caption from the original Telegram message if it exists\nconst caption = $('Telegram Trigger').item.json.message.caption || 'What is in this image?';\n\nreturn [{ \n  json: { \n    base64Image: base64Image,\n    prompt: caption,\n    chatId: $('Telegram Trigger').item.json.message.chat.id,\n    messageId: $('Telegram Trigger').item.json.message.message_id\n  } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        416
+      ],
+      "id": "c9bd6275-58e2-4b16-a200-6b8f1070fa1b",
+      "name": "Convert to Base"
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "model",
+              "stringValue": "auto"
+            },
+            {
+              "name": "base64Image",
+              "stringValue": "={{ $json.base64Image }}"
+            },
+            {
+              "name": "userPrompt",
+              "stringValue": "extract the trancastion on this image. output in md format"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "49b95148-ca6f-4392-97f3-d664f5d5d273",
+      "name": "Set Request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        128,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.photo[3].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -288,
+        416
+      ],
+      "id": "1309d7db-82d3-47d4-99f3-2045664bc78f",
+      "name": "📥 Download Image",
+      "webhookId": "7d9d13d4-ec19-40d7-a905-0b44b58867d9",
+      "credentials": {
+        "telegramApi": {
+          "id": "wlH3um2hoPAGI8XX",
+          "name": "Khaisa Dev Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -496,
+        416
+      ],
+      "id": "50024d75-3377-45ef-95c9-683766b87fa8",
+      "name": "Telegram Trigger",
+      "webhookId": "f460f87e-fb6b-4854-a012-46de743f7695",
+      "credentials": {
+        "telegramApi": {
+          "id": "wlH3um2hoPAGI8XX",
+          "name": "Khaisa Dev Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.unli.dev/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"{{ $json.model }}\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"data:image/jpeg;base64,{{ $json.base64Image }}\"\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"text\": \"{{ $json.prompt }}\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "03857f42-2145-4a91-b49d-88d0cedb9eb5",
+      "name": "Call Vision API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        336,
+        416
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "orxLpGp8WTDwNIaF",
+          "name": "Unli.dev - Jon"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Telegram Trigger": [
+      {
+        "json": {
+          "update_id": 602987959,
+          "message": {
+            "message_id": 11095,
+            "from": {
+              "id": 621412350,
+              "is_bot": false,
+              "first_name": "khairul",
+              "username": "Khmuhtadin",
+              "language_code": "en"
+            },
+            "chat": {
+              "id": 621412350,
+              "first_name": "khairul",
+              "username": "Khmuhtadin",
+              "type": "private"
+            },
+            "date": 1755771042,
+            "photo": [
+              {
+                "file_id": "AgACAgUAAxkBAAIrV2im8KIxcwHODUo6awNsS68yvjPxAAJ90TEbFQ45VT_PGhSGK0w_AQADAgADcwADNgQ",
+                "file_unique_id": "AQADfdExGxUOOVV4",
+                "file_size": 1276,
+                "width": 42,
+                "height": 90
+              },
+              {
+                "file_id": "AgACAgUAAxkBAAIrV2im8KIxcwHODUo6awNsS68yvjPxAAJ90TEbFQ45VT_PGhSGK0w_AQADAgADbQADNgQ",
+                "file_unique_id": "AQADfdExGxUOOVVy",
+                "file_size": 16029,
+                "width": 148,
+                "height": 320
+              },
+              {
+                "file_id": "AgACAgUAAxkBAAIrV2im8KIxcwHODUo6awNsS68yvjPxAAJ90TEbFQ45VT_PGhSGK0w_AQADAgADeAADNgQ",
+                "file_unique_id": "AQADfdExGxUOOVV9",
+                "file_size": 68479,
+                "width": 369,
+                "height": 800
+              },
+              {
+                "file_id": "AgACAgUAAxkBAAIrV2im8KIxcwHODUo6awNsS68yvjPxAAJ90TEbFQ45VT_PGhSGK0w_AQADAgADeQADNgQ",
+                "file_unique_id": "AQADfdExGxUOOVV-",
+                "file_size": 92733,
+                "width": 591,
+                "height": 1280
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Convert to Base": {
+      "main": [
+        [
+          {
+            "node": "Set Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Request": {
+      "main": [
+        [
+          {
+            "node": "Call Vision API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 Download Image": {
+      "main": [
+        [
+          {
+            "node": "Convert to Base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "📥 Download Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Vision API": {
+      "main": [
+        [
+          {
+            "node": "📤 Send Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "19150b3b-1dc8-4310-870d-6d735f59214e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c2650793f644091dc80fb900fe63448ad1f4b774008de9608064d67294f8307c"
+  },
+  "id": "7CdWmTSFuTCbGS5F",
+  "tags": []
+}

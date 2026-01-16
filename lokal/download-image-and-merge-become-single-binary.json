@@ -1,1 +1,249 @@
-"{\n  \"name\": \"donwload-image\",\n  \"nodes\": [\n    {\n      \"parameters\": {},\n      \"type\": \"n8n-nodes-base.manualTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [\n        -528,\n        256\n      ],\n      \"id\": \"79ff587a-6833-41d2-9c09-cac9b75da0d0\",\n      \"name\": \"When clicking ‘Execute workflow’\"\n    },\n    {\n      \"parameters\": {\n        \"amount\": 2\n      },\n      \"type\": \"n8n-nodes-base.wait\",\n      \"typeVersion\": 1.1,\n      \"position\": [\n        912,\n        240\n      ],\n      \"id\": \"4928a0b0-f2aa-48e5-8476-f9676093ede3\",\n      \"name\": \"Wait1\",\n      \"webhookId\": \"f2a645e4-8503-4c5b-a804-bad8da20fc69\"\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"compress\",\n        \"binaryPropertyName\": \"={{ $json.binary_keys }}\",\n        \"outputFormat\": \"zip\",\n        \"fileName\": \"images.zip\"\n      },\n      \"name\": \"Compression\",\n      \"type\": \"n8n-nodes-base.compression\",\n      \"position\": [\n        512,\n        496\n      ],\n      \"typeVersion\": 1,\n      \"id\": \"f42851b5-5ecd-4290-b07d-a3b02230c901\"\n    },\n    {\n      \"parameters\": {\n        \"batchSize\": 1,\n        \"options\": {}\n      },\n      \"id\": \"b17e5395-e445-4832-93ae-add599723b86\",\n      \"name\": \"Split In Batches\",\n      \"type\": \"n8n-nodes-base.splitInBatches\",\n      \"typeVersion\": 2,\n      \"position\": [\n        48,\n        256\n      ]\n    },\n    {\n      \"parameters\": {\n        \"jsCode\": \"items.forEach(item => {\\n  if (item.json?.Link) {\\n    item.json.Link = item.json.Link.trim();\\n  }\\n});\\n\\nreturn items;\"\n      },\n      \"type\": \"n8n-nodes-base.code\",\n      \"typeVersion\": 2,\n      \"position\": [\n        -128,\n        256\n      ],\n      \"id\": \"242628f3-b198-4be8-8a63-efcf0941df39\",\n      \"name\": \"Code\"\n    },\n    {\n      \"parameters\": {\n        \"url\": \"={{ $json.Link }}\",\n        \"options\": {\n          \"redirect\": {\n            \"redirect\": {\n              \"maxRedirects\": \"=true\"\n            }\n          },\n          \"response\": {\n            \"response\": {\n              \"responseFormat\": \"file\"\n            }\n          },\n          \"timeout\": 300000\n        }\n      },\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 4,\n      \"position\": [\n        304,\n        240\n      ],\n      \"id\": \"4688438f-d91e-4e27-beaf-6eecc355286c\",\n      \"name\": \"Download File\"\n    },\n    {\n      \"parameters\": {\n        \"documentId\": {\n          \"__rl\": true,\n          \"value\": \"1bLC6KATMOi7uZri1jCHYvdnBGAmYOpPsmMs0oxHWM4E\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"List-url\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/1bLC6KATMOi7uZri1jCHYvdnBGAmYOpPsmMs0oxHWM4E/edit?usp=drivesdk\"\n        },\n        \"sheetName\": {\n          \"__rl\": true,\n          \"value\": 708467874,\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Sheet2\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/1bLC6KATMOi7uZri1jCHYvdnBGAmYOpPsmMs0oxHWM4E/edit#gid=708467874\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.googleSheets\",\n      \"typeVersion\": 4.7,\n      \"position\": [\n        -336,\n        256\n      ],\n      \"id\": \"857d8e2b-f479-4dda-b044-cad73fec9e91\",\n      \"name\": \"Get row(s) in sheet\",\n      \"credentials\": {\n        \"googleSheetsOAuth2Api\": {\n          \"id\": \"Y4W0pcwPu2sfk8N1\",\n          \"name\": \"Google Sheets account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"jsCode\": \"let binaries = {}, binary_keys = [];\\n\\nfor([index, item] of items.entries()) {\\n    binaries[`data_${index}`] = item.binary.data;\\n    binary_keys.push(`data_${index}`);\\n}\\n\\nreturn [{\\n    json: {\\n        binary_keys: binary_keys.join(',')\\n    },\\n    binary: binaries\\n}];\"\n      },\n      \"type\": \"n8n-nodes-base.code\",\n      \"typeVersion\": 2,\n      \"position\": [\n        304,\n        496\n      ],\n      \"id\": \"1fb0c57e-2834-4277-a354-084f9054d46f\",\n      \"name\": \"merge\"\n    }\n  ],\n  \"pinData\": {\n    \"When clicking ‘Execute workflow’\": [\n      {\n        \"json\": {}\n      }\n    ]\n  },\n  \"connections\": {\n    \"When clicking ‘Execute workflow’\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Get row(s) in sheet\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Wait1\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Split In Batches\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Split In Batches\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Download File\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ],\n        [\n          {\n            \"node\": \"merge\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Code\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Split In Batches\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Download File\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Wait1\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Get row(s) in sheet\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Code\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"merge\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Compression\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    }\n  },\n  \"active\": false,\n  \"settings\": {\n    \"executionOrder\": \"v1\"\n  },\n  \"versionId\": \"48111dd0-5495-429b-bc65-cd947abd4e9e\",\n  \"meta\": {\n    \"templateCredsSetupCompleted\": true,\n    \"instanceId\": \"dcfade3f45b590d9e21d93325377795897ae808c2e6bce95efc9aea7a8036207\"\n  },\n  \"id\": \"l4E1RkmqVC20yG3k\",\n  \"tags\": []\n}"
+{
+  "name": "donwload-image",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        256
+      ],
+      "id": "79ff587a-6833-41d2-9c09-cac9b75da0d0",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        912,
+        240
+      ],
+      "id": "4928a0b0-f2aa-48e5-8476-f9676093ede3",
+      "name": "Wait1",
+      "webhookId": "f2a645e4-8503-4c5b-a804-bad8da20fc69"
+    },
+    {
+      "parameters": {
+        "operation": "compress",
+        "binaryPropertyName": "={{ $json.binary_keys }}",
+        "outputFormat": "zip",
+        "fileName": "images.zip"
+      },
+      "name": "Compression",
+      "type": "n8n-nodes-base.compression",
+      "position": [
+        512,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "f42851b5-5ecd-4290-b07d-a3b02230c901"
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "b17e5395-e445-4832-93ae-add599723b86",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [
+        48,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "items.forEach(item => {\n  if (item.json?.Link) {\n    item.json.Link = item.json.Link.trim();\n  }\n});\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        256
+      ],
+      "id": "242628f3-b198-4be8-8a63-efcf0941df39",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.Link }}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": "=true"
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        304,
+        240
+      ],
+      "id": "4688438f-d91e-4e27-beaf-6eecc355286c",
+      "name": "Download File"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1bLC6KATMOi7uZri1jCHYvdnBGAmYOpPsmMs0oxHWM4E",
+          "mode": "list",
+          "cachedResultName": "List-url",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bLC6KATMOi7uZri1jCHYvdnBGAmYOpPsmMs0oxHWM4E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 708467874,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bLC6KATMOi7uZri1jCHYvdnBGAmYOpPsmMs0oxHWM4E/edit#gid=708467874"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -336,
+        256
+      ],
+      "id": "857d8e2b-f479-4dda-b044-cad73fec9e91",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Y4W0pcwPu2sfk8N1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let binaries = {}, binary_keys = [];\n\nfor([index, item] of items.entries()) {\n    binaries[`data_${index}`] = item.binary.data;\n    binary_keys.push(`data_${index}`);\n}\n\nreturn [{\n    json: {\n        binary_keys: binary_keys.join(',')\n    },\n    binary: binaries\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        496
+      ],
+      "id": "1fb0c57e-2834-4277-a354-084f9054d46f",
+      "name": "merge"
+    }
+  ],
+  "pinData": {
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {}
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge": {
+      "main": [
+        [
+          {
+            "node": "Compression",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "48111dd0-5495-429b-bc65-cd947abd4e9e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dcfade3f45b590d9e21d93325377795897ae808c2e6bce95efc9aea7a8036207"
+  },
+  "id": "l4E1RkmqVC20yG3k",
+  "tags": []
+}

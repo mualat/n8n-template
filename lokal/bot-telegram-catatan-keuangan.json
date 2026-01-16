@@ -1,1 +1,404 @@
-"{\n  \"name\": \"Keuangan\",\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"updates\": [\n          \"message\"\n        ],\n        \"additionalFields\": {}\n      },\n      \"type\": \"n8n-nodes-base.telegramTrigger\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        0,\n        0\n      ],\n      \"id\": \"67f00b60-6951-453b-b01c-d776f8bd60f9\",\n      \"name\": \"Telegram Trigger\",\n      \"webhookId\": \"a7cfe795-179e-413f-929f-d2c24989e6f0\",\n      \"credentials\": {\n        \"telegramApi\": {\n          \"id\": \"f149pCNByn2NOW4g\",\n          \"name\": \"SquidBot\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"options\": {\n            \"caseSensitive\": true,\n            \"leftValue\": \"\",\n            \"typeValidation\": \"strict\",\n            \"version\": 2\n          },\n          \"conditions\": [\n            {\n              \"id\": \"9311e8b3-05d5-4a95-84eb-ff91ea9ceffb\",\n              \"leftValue\": \"={{ $json.message.text }}\",\n              \"rightValue\": \"saldo\",\n              \"operator\": {\n                \"type\": \"string\",\n                \"operation\": \"notContains\"\n              }\n            }\n          ],\n          \"combinator\": \"and\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 2.2,\n      \"position\": [\n        220,\n        0\n      ],\n      \"id\": \"b3776ba9-2fb4-44a3-ad6c-891835c9ff37\",\n      \"name\": \"If\"\n    },\n    {\n      \"parameters\": {\n        \"promptType\": \"define\",\n        \"text\": \"={{ $json.message.text }}\",\n        \"options\": {\n          \"systemMessage\": \"=Kamu adalah Bot Asisten Keuangan probadi Bisri Mustofa, Tugasmu adalah sebagai berikut :\\n1. Cek prompt menjadi data keuangan\\n2. Analisis apakah itu termasuk pemasukan atau pengeluaran\\n3. Jika itu pemasukan maka, Nilai Bersih uang menjadi bernilai positif, jika pengeluaran maka Nilai Bersih menjadi negatif\\n4. analisis juga kategori menjadi berikut :\\nPemasukan (Gaji, Bonus, Lain-lain)\\nPengeluaran (Makanan, Belanja, Tagihan, Hiburan, Lain-lain)\\n\\nSetelah itu pastikan kamu punya data berikut :\\nTanggal : {{ $now.format('yyyy-MM-dd') }}\\nKeterangan :\\nJenis :\\t\\nKategori :\\t\\nJumlah : \\nNilai Bersih :\\n\\nSetelah itu isikan ke dalam tool (keuangan) Gsheet.\"\n        }\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.agent\",\n      \"typeVersion\": 2,\n      \"position\": [\n        440,\n        -220\n      ],\n      \"id\": \"5131f7ff-8368-4387-887b-614a8c8dbbbb\",\n      \"name\": \"AI Agent\"\n    },\n    {\n      \"parameters\": {\n        \"options\": {}\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.lmChatGoogleGemini\",\n      \"typeVersion\": 1,\n      \"position\": [\n        440,\n        0\n      ],\n      \"id\": \"ed8200f6-f96b-43a7-a42c-a9d93d2735d6\",\n      \"name\": \"Google Gemini Chat Model\",\n      \"credentials\": {\n        \"googlePalmApi\": {\n          \"id\": \"kN4LdXMa8Cj3J9fy\",\n          \"name\": \"AI BotSquid\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"authentication\": \"serviceAccount\",\n        \"operation\": \"append\",\n        \"documentId\": {\n          \"__rl\": true,\n          \"value\": \"https://docs.google.com/spreadsheets/d/17dnUd61opyFeAM-sitJlwr5v5CHnEBZ-tYcx29v_HNE/edit?usp=sharing\",\n          \"mode\": \"url\"\n        },\n        \"sheetName\": {\n          \"__rl\": true,\n          \"value\": \"gid=0\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Sheet1\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/17dnUd61opyFeAM-sitJlwr5v5CHnEBZ-tYcx29v_HNE/edit#gid=0\"\n        },\n        \"columns\": {\n          \"mappingMode\": \"defineBelow\",\n          \"value\": {\n            \"Jenis\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Jenis', ``, 'string') }}\",\n            \"Waktu\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Waktu', ``, 'string') }}\",\n            \"Deskripsi\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Deskripsi', ``, 'string') }}\",\n            \"Total\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Total', ``, 'string') }}\",\n            \"Nilai Bersih\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Nilai_Bersih', ``, 'string') }}\"\n          },\n          \"matchingColumns\": [],\n          \"schema\": [\n            {\n              \"id\": \"Waktu\",\n              \"displayName\": \"Waktu\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true,\n              \"removed\": false\n            },\n            {\n              \"id\": \"Jenis\",\n              \"displayName\": \"Jenis\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Deskripsi\",\n              \"displayName\": \"Deskripsi\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true,\n              \"removed\": false\n            },\n            {\n              \"id\": \"Total\",\n              \"displayName\": \"Total\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true,\n              \"removed\": false\n            },\n            {\n              \"id\": \"Nilai Bersih\",\n              \"displayName\": \"Nilai Bersih\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true,\n              \"removed\": false\n            },\n            {\n              \"id\": \"Saldo\",\n              \"displayName\": \"Saldo\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true,\n              \"removed\": true\n            }\n          ],\n          \"attemptToConvertTypes\": false,\n          \"convertFieldsToString\": false\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.googleSheetsTool\",\n      \"typeVersion\": 4.6,\n      \"position\": [\n        600,\n        -20\n      ],\n      \"id\": \"b088324b-d82d-490e-936e-07d97f9c8d24\",\n      \"name\": \"keuangan\",\n      \"credentials\": {\n        \"googleApi\": {\n          \"id\": \"Ov5hCw7WSpwTR77r\",\n          \"name\": \"Google Service Account account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"promptType\": \"define\",\n        \"text\": \"={{ $('Telegram Trigger').item.json.message.text }}\",\n        \"options\": {\n          \"systemMessage\": \"=Kamu adalah Bot Asisten Keuangan probadi Bisri Mustofa, Tugasmu adalah sebagai berikut :\\n1. Cek apakah user butuh menampilkan data saldo\\n2. Ambil data dari tool (catatan) do gsheet\\n3. Liat lagi apakah user butuh saldo akhir, saldo per waktu\\n\\nberikan output yang sesuai dari data tool catatan di gsheet\"\n        }\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.agent\",\n      \"typeVersion\": 2,\n      \"position\": [\n        440,\n        160\n      ],\n      \"id\": \"93de7a1c-4953-4980-94ab-afa8c50e1116\",\n      \"name\": \"AI Agent1\"\n    },\n    {\n      \"parameters\": {\n        \"chatId\": \"={{ $('Telegram Trigger').item.json.message.from.id }}\",\n        \"text\": \"={{ $json.output }}\",\n        \"additionalFields\": {\n          \"appendAttribution\": false\n        }\n      },\n      \"type\": \"n8n-nodes-base.telegram\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        800,\n        -220\n      ],\n      \"id\": \"27e9df2e-0068-46aa-b3db-46480c32ea55\",\n      \"name\": \"Send a text message\",\n      \"webhookId\": \"7298fa0d-ea8d-4c5f-afec-54ea32caeabe\",\n      \"credentials\": {\n        \"telegramApi\": {\n          \"id\": \"f149pCNByn2NOW4g\",\n          \"name\": \"SquidBot\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"authentication\": \"serviceAccount\",\n        \"documentId\": {\n          \"__rl\": true,\n          \"value\": \"https://docs.google.com/spreadsheets/d/17dnUd61opyFeAM-sitJlwr5v5CHnEBZ-tYcx29v_HNE/edit?usp=sharing\",\n          \"mode\": \"url\"\n        },\n        \"sheetName\": {\n          \"__rl\": true,\n          \"value\": \"gid=0\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Sheet1\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/17dnUd61opyFeAM-sitJlwr5v5CHnEBZ-tYcx29v_HNE/edit#gid=0\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.googleSheetsTool\",\n      \"typeVersion\": 4.6,\n      \"position\": [\n        620,\n        360\n      ],\n      \"id\": \"d2db2251-8e23-4ea2-b9e8-3f0a83a3f561\",\n      \"name\": \"catatan\",\n      \"credentials\": {\n        \"googleApi\": {\n          \"id\": \"Ov5hCw7WSpwTR77r\",\n          \"name\": \"Google Service Account account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"chatId\": \"={{ $('Telegram Trigger').item.json.message.from.id }}\",\n        \"text\": \"={{ $json.output }}\",\n        \"additionalFields\": {\n          \"appendAttribution\": false\n        }\n      },\n      \"type\": \"n8n-nodes-base.telegram\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        800,\n        160\n      ],\n      \"id\": \"722d1824-432d-4fc9-a3aa-a8967f8a5594\",\n      \"name\": \"Send a text message1\",\n      \"webhookId\": \"1d6c3ce4-d2e1-47a3-8f1d-495170ad7aa0\",\n      \"credentials\": {\n        \"telegramApi\": {\n          \"id\": \"f149pCNByn2NOW4g\",\n          \"name\": \"SquidBot\"\n        }\n      }\n    }\n  ],\n  \"pinData\": {},\n  \"connections\": {\n    \"Telegram Trigger\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"If\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"If\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ],\n        [\n          {\n            \"node\": \"AI Agent1\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Google Gemini Chat Model\": {\n      \"ai_languageModel\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_languageModel\",\n            \"index\": 0\n          },\n          {\n            \"node\": \"AI Agent1\",\n            \"type\": \"ai_languageModel\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"keuangan\": {\n      \"ai_tool\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_tool\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"AI Agent\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Send a text message\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"catatan\": {\n      \"ai_tool\": [\n        [\n          {\n            \"node\": \"AI Agent1\",\n            \"type\": \"ai_tool\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"AI Agent1\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Send a text message1\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    }\n  },\n  \"active\": true,\n  \"settings\": {\n    \"executionOrder\": \"v1\"\n  },\n  \"versionId\": \"531cd407-5058-4774-b8ad-94ecf203652e\",\n  \"meta\": {\n    \"templateCredsSetupCompleted\": true,\n    \"instanceId\": \"93ee2fa4f886d17cb2a70b2dcec888f017693a6bb45298d43443c371060fae6a\"\n  },\n  \"id\": \"GclLBm19rsZ9HO3c\",\n  \"tags\": []\n}"
+{
+  "name": "Keuangan",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "67f00b60-6951-453b-b01c-d776f8bd60f9",
+      "name": "Telegram Trigger",
+      "webhookId": "a7cfe795-179e-413f-929f-d2c24989e6f0",
+      "credentials": {
+        "telegramApi": {
+          "id": "f149pCNByn2NOW4g",
+          "name": "SquidBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9311e8b3-05d5-4a95-84eb-ff91ea9ceffb",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "saldo",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "b3776ba9-2fb4-44a3-ad6c-891835c9ff37",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=Kamu adalah Bot Asisten Keuangan probadi Bisri Mustofa, Tugasmu adalah sebagai berikut :\n1. Cek prompt menjadi data keuangan\n2. Analisis apakah itu termasuk pemasukan atau pengeluaran\n3. Jika itu pemasukan maka, Nilai Bersih uang menjadi bernilai positif, jika pengeluaran maka Nilai Bersih menjadi negatif\n4. analisis juga kategori menjadi berikut :\nPemasukan (Gaji, Bonus, Lain-lain)\nPengeluaran (Makanan, Belanja, Tagihan, Hiburan, Lain-lain)\n\nSetelah itu pastikan kamu punya data berikut :\nTanggal : {{ $now.format('yyyy-MM-dd') }}\nKeterangan :\nJenis :\t\nKategori :\t\nJumlah : \nNilai Bersih :\n\nSetelah itu isikan ke dalam tool (keuangan) Gsheet."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -220
+      ],
+      "id": "5131f7ff-8368-4387-887b-614a8c8dbbbb",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ],
+      "id": "ed8200f6-f96b-43a7-a42c-a9d93d2735d6",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kN4LdXMa8Cj3J9fy",
+          "name": "AI BotSquid"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/17dnUd61opyFeAM-sitJlwr5v5CHnEBZ-tYcx29v_HNE/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17dnUd61opyFeAM-sitJlwr5v5CHnEBZ-tYcx29v_HNE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Jenis": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Jenis', ``, 'string') }}",
+            "Waktu": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Waktu', ``, 'string') }}",
+            "Deskripsi": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Deskripsi', ``, 'string') }}",
+            "Total": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Total', ``, 'string') }}",
+            "Nilai Bersih": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Nilai_Bersih', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Waktu",
+              "displayName": "Waktu",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Jenis",
+              "displayName": "Jenis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Deskripsi",
+              "displayName": "Deskripsi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total",
+              "displayName": "Total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nilai Bersih",
+              "displayName": "Nilai Bersih",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Saldo",
+              "displayName": "Saldo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        600,
+        -20
+      ],
+      "id": "b088324b-d82d-490e-936e-07d97f9c8d24",
+      "name": "keuangan",
+      "credentials": {
+        "googleApi": {
+          "id": "Ov5hCw7WSpwTR77r",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "=Kamu adalah Bot Asisten Keuangan probadi Bisri Mustofa, Tugasmu adalah sebagai berikut :\n1. Cek apakah user butuh menampilkan data saldo\n2. Ambil data dari tool (catatan) do gsheet\n3. Liat lagi apakah user butuh saldo akhir, saldo per waktu\n\nberikan output yang sesuai dari data tool catatan di gsheet"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        440,
+        160
+      ],
+      "id": "93de7a1c-4953-4980-94ab-afa8c50e1116",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        -220
+      ],
+      "id": "27e9df2e-0068-46aa-b3db-46480c32ea55",
+      "name": "Send a text message",
+      "webhookId": "7298fa0d-ea8d-4c5f-afec-54ea32caeabe",
+      "credentials": {
+        "telegramApi": {
+          "id": "f149pCNByn2NOW4g",
+          "name": "SquidBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/17dnUd61opyFeAM-sitJlwr5v5CHnEBZ-tYcx29v_HNE/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17dnUd61opyFeAM-sitJlwr5v5CHnEBZ-tYcx29v_HNE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        620,
+        360
+      ],
+      "id": "d2db2251-8e23-4ea2-b9e8-3f0a83a3f561",
+      "name": "catatan",
+      "credentials": {
+        "googleApi": {
+          "id": "Ov5hCw7WSpwTR77r",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        160
+      ],
+      "id": "722d1824-432d-4fc9-a3aa-a8967f8a5594",
+      "name": "Send a text message1",
+      "webhookId": "1d6c3ce4-d2e1-47a3-8f1d-495170ad7aa0",
+      "credentials": {
+        "telegramApi": {
+          "id": "f149pCNByn2NOW4g",
+          "name": "SquidBot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "keuangan": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "catatan": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "531cd407-5058-4774-b8ad-94ecf203652e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "93ee2fa4f886d17cb2a70b2dcec888f017693a6bb45298d43443c371060fae6a"
+  },
+  "id": "GclLBm19rsZ9HO3c",
+  "tags": []
+}

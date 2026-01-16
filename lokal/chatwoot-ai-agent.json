@@ -1,1 +1,205 @@
-"{\n  \"name\": \"Chatwoot AI\",\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"httpMethod\": \"POST\",\n        \"path\": \"d4597311-e7b4-4791-a45d-290bfa0d8ff9\",\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.webhook\",\n      \"typeVersion\": 2,\n      \"position\": [\n        -260,\n        0\n      ],\n      \"id\": \"50bc4e90-b105-4494-a58f-109fd417db19\",\n      \"name\": \"Webhook\",\n      \"webhookId\": \"d4597311-e7b4-4791-a45d-290bfa0d8ff9\"\n    },\n    {\n      \"parameters\": {\n        \"promptType\": \"define\",\n        \"text\": \"={{ $json.body.content }}\",\n        \"options\": {}\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.agent\",\n      \"typeVersion\": 2,\n      \"position\": [\n        280,\n        0\n      ],\n      \"id\": \"b92da48b-6358-4891-9184-7a00c54f53dc\",\n      \"name\": \"AI Agent\"\n    },\n    {\n      \"parameters\": {\n        \"model\": {\n          \"__rl\": true,\n          \"value\": \"gpt-4.1\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"gpt-4.1\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.lmChatOpenAi\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        120,\n        240\n      ],\n      \"id\": \"f06501c8-b118-4c11-a2e3-a10585484ed0\",\n      \"name\": \"OpenAI Chat Model\",\n      \"credentials\": {\n        \"openAiApi\": {\n          \"id\": \"y8sLJ2LzZL2c7SGi\",\n          \"name\": \"OpenAI Webinar\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"sessionIdType\": \"customKey\",\n        \"sessionKey\": \"={{ $json.body.conversation.contact_inbox.source_id }}\"\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.memoryBufferWindow\",\n      \"typeVersion\": 1.3,\n      \"position\": [\n        300,\n        240\n      ],\n      \"id\": \"9e97a0ee-dcb8-480b-9c70-fc8a6c3bc6ee\",\n      \"name\": \"Simple Memory\"\n    },\n    {\n      \"parameters\": {\n        \"resource\": \"Messages\",\n        \"operation\": \"Create A New Message In A Conversation\",\n        \"account_id\": \"={{ $('Webhook').item.json.body.account.id }}\",\n        \"conversation_id\": \"={{ $('Webhook').item.json.body.conversation.id }}\",\n        \"content\": \"={{ $json.output }}\",\n        \"private\": false,\n        \"content_type\": \"=text\",\n        \"template_params\": \"{}\",\n        \"requestOptions\": {}\n      },\n      \"type\": \"@devlikeapro/n8n-nodes-chatwoot.chatWoot\",\n      \"typeVersion\": 1,\n      \"position\": [\n        640,\n        0\n      ],\n      \"id\": \"0bf2db4f-5223-4d77-a83d-5706108458e3\",\n      \"name\": \"Create New Message\",\n      \"credentials\": {\n        \"chatwootApi\": {\n          \"id\": \"FctKQzZqmtZp65LF\",\n          \"name\": \"ChatWoot - Application\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"options\": {\n            \"caseSensitive\": true,\n            \"leftValue\": \"\",\n            \"typeValidation\": \"strict\",\n            \"version\": 2\n          },\n          \"conditions\": [\n            {\n              \"id\": \"e95389d1-3bee-48d9-9efb-8222b4b6b206\",\n              \"leftValue\": \"={{ $json.body.message_type }}\",\n              \"rightValue\": \"incoming\",\n              \"operator\": {\n                \"type\": \"string\",\n                \"operation\": \"equals\",\n                \"name\": \"filter.operator.equals\"\n              }\n            }\n          ],\n          \"combinator\": \"and\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 2.2,\n      \"position\": [\n        -40,\n        0\n      ],\n      \"id\": \"9ba8bbc0-7582-411b-9b82-8c1ca8af295a\",\n      \"name\": \"If Incoming Message\"\n    }\n  ],\n  \"pinData\": {},\n  \"connections\": {\n    \"Webhook\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"If Incoming Message\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"OpenAI Chat Model\": {\n      \"ai_languageModel\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_languageModel\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Simple Memory\": {\n      \"ai_memory\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_memory\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"AI Agent\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Create New Message\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"If Incoming Message\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    }\n  },\n  \"active\": true,\n  \"settings\": {\n    \"executionOrder\": \"v1\"\n  },\n  \"versionId\": \"82466eec-b23c-4d07-a12a-3ba559cae192\",\n  \"meta\": {\n    \"templateCredsSetupCompleted\": true,\n    \"instanceId\": \"fa52a98dd39f67760c7540fff8a0dd5306d89f766551eb7a7c84b5f43eb33d4c\"\n  },\n  \"id\": \"sllw12I6rsuvJSpp\",\n  \"tags\": []\n}"
+{
+  "name": "Chatwoot AI",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "d4597311-e7b4-4791-a45d-290bfa0d8ff9",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        0
+      ],
+      "id": "50bc4e90-b105-4494-a58f-109fd417db19",
+      "name": "Webhook",
+      "webhookId": "d4597311-e7b4-4791-a45d-290bfa0d8ff9"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.content }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        280,
+        0
+      ],
+      "id": "b92da48b-6358-4891-9184-7a00c54f53dc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        120,
+        240
+      ],
+      "id": "f06501c8-b118-4c11-a2e3-a10585484ed0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "y8sLJ2LzZL2c7SGi",
+          "name": "OpenAI Webinar"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.conversation.contact_inbox.source_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        300,
+        240
+      ],
+      "id": "9e97a0ee-dcb8-480b-9c70-fc8a6c3bc6ee",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "resource": "Messages",
+        "operation": "Create A New Message In A Conversation",
+        "account_id": "={{ $('Webhook').item.json.body.account.id }}",
+        "conversation_id": "={{ $('Webhook').item.json.body.conversation.id }}",
+        "content": "={{ $json.output }}",
+        "private": false,
+        "content_type": "=text",
+        "template_params": "{}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-chatwoot.chatWoot",
+      "typeVersion": 1,
+      "position": [
+        640,
+        0
+      ],
+      "id": "0bf2db4f-5223-4d77-a83d-5706108458e3",
+      "name": "Create New Message",
+      "credentials": {
+        "chatwootApi": {
+          "id": "FctKQzZqmtZp65LF",
+          "name": "ChatWoot - Application"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e95389d1-3bee-48d9-9efb-8222b4b6b206",
+              "leftValue": "={{ $json.body.message_type }}",
+              "rightValue": "incoming",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -40,
+        0
+      ],
+      "id": "9ba8bbc0-7582-411b-9b82-8c1ca8af295a",
+      "name": "If Incoming Message"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If Incoming Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create New Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Incoming Message": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "82466eec-b23c-4d07-a12a-3ba559cae192",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fa52a98dd39f67760c7540fff8a0dd5306d89f766551eb7a7c84b5f43eb33d4c"
+  },
+  "id": "sllw12I6rsuvJSpp",
+  "tags": []
+}

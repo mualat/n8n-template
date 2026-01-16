@@ -1,1 +1,344 @@
-"{\n  \"name\": \"Pagespeed Automation\",\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"values\": {\n          \"string\": [\n            {\n              \"name\": \"url\",\n              \"value\": \"https://ridwaninstitute.co.id/id/sinta-2-jurnal-akuntansi/\"\n            },\n            {\n              \"name\": \"url\",\n              \"value\": \"https://ridwaninstitute.co.id/daftar-jurnal-sinta-4/\"\n            },\n            {\n              \"name\": \"url\",\n              \"value\": \"https://ridwaninstitute.co.id/id/publisher-jurnal-internasional/\"\n            }\n          ]\n        },\n        \"options\": {\n          \"dotNotation\": false\n        }\n      },\n      \"id\": \"fe906302-6f1c-4cc2-9b9f-25ad7f04cb72\",\n      \"name\": \"Start URLs\",\n      \"type\": \"n8n-nodes-base.set\",\n      \"typeVersion\": 2,\n      \"position\": [\n        -496,\n        -224\n      ]\n    },\n    {\n      \"parameters\": {\n        \"batchSize\": 5,\n        \"options\": {}\n      },\n      \"id\": \"3a08d808-bd42-42d9-a7a4-31f4aebfde45\",\n      \"name\": \"Split In Batches\",\n      \"type\": \"n8n-nodes-base.splitInBatches\",\n      \"typeVersion\": 1,\n      \"position\": [\n        -384,\n        -64\n      ]\n    },\n    {\n      \"parameters\": {\n        \"url\": \"https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://www.google.com/&strategy=mobile&category=performance&key=AIzaSyCCXbKc_MfvKEkpeoNMjRBIRgNJSNP0F5g\",\n        \"options\": {}\n      },\n      \"id\": \"ccbc741b-5531-4e89-855b-6f39896926fd\",\n      \"name\": \"Check PageSpeed\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 4,\n      \"position\": [\n        -272,\n        -224\n      ]\n    },\n    {\n      \"parameters\": {\n        \"unit\": \"seconds\"\n      },\n      \"id\": \"0a4a1a88-07ba-40ec-8ed8-5bfd46586dd4\",\n      \"name\": \"Wait\",\n      \"type\": \"n8n-nodes-base.wait\",\n      \"typeVersion\": 1,\n      \"position\": [\n        -160,\n        -64\n      ],\n      \"webhookId\": \"00f8c794-8ae9-45e5-a0a9-d3a5f82fc67c\"\n    },\n    {\n      \"parameters\": {\n        \"jsCode\": \"// PSI -> row siap ke Sheets (detik utk FCP/LCP/SI)\\nreturn items.map(item => {\\n  const r  = item.json;\\n  const lh = r?.lighthouseResult || {};\\n  const audits = lh.audits || {};\\n\\n  const num = (key, div = 1000, fix = 1) => {\\n    const v = audits[key]?.numericValue;\\n    if (v == null || isNaN(v)) return null;\\n    return Number((Number(v) / div).toFixed(fix));\\n  };\\n\\n  return {\\n    json: {\\n      url: r.id || r.requestedUrl || '—',\\n      // sesuai header di sheet (case-sensitive):\\n      LCP:        num('largest-contentful-paint'),\\n      speedIndex: num('speed-index'),\\n      FCP:        num('first-contentful-paint'),\\n      date: new Date().toISOString().slice(0,10)\\n    }\\n  };\\n});\\n\"\n      },\n      \"type\": \"n8n-nodes-base.code\",\n      \"typeVersion\": 2,\n      \"position\": [\n        -48,\n        -224\n      ],\n      \"id\": \"11e539b0-8cbf-4b71-8895-dd1fb635f04c\",\n      \"name\": \"Extract Matrix\"\n    },\n    {\n      \"parameters\": {\n        \"resource\": \"fileFolder\",\n        \"searchMethod\": \"query\",\n        \"queryString\": \"name = 'Pagespeed Automation' \\nand mimeType = 'application/vnd.google-apps.spreadsheet' \\nand trashed = false\",\n        \"returnAll\": true,\n        \"filter\": {},\n        \"options\": {\n          \"fields\": [\n            \"id\",\n            \"name\"\n          ]\n        }\n      },\n      \"type\": \"n8n-nodes-base.googleDrive\",\n      \"typeVersion\": 3,\n      \"position\": [\n        64,\n        -64\n      ],\n      \"id\": \"a32911d9-36bb-42c5-98a1-0ecc7c71c199\",\n      \"name\": \"Search files and folders\",\n      \"credentials\": {\n        \"googleDriveOAuth2Api\": {\n          \"id\": \"a1ncFrnWNyObKTGX\",\n          \"name\": \"Google Drive account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"append\",\n        \"documentId\": {\n          \"__rl\": true,\n          \"value\": \"1B1syvm7aPj5J1KroNgkLm7QiuEQ0TvN3WCW3DfxgCu8\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Pagespeed Automation\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/1B1syvm7aPj5J1KroNgkLm7QiuEQ0TvN3WCW3DfxgCu8/edit?usp=drivesdk\"\n        },\n        \"sheetName\": {\n          \"__rl\": true,\n          \"value\": \"gid=0\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Sheet1\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/1B1syvm7aPj5J1KroNgkLm7QiuEQ0TvN3WCW3DfxgCu8/edit#gid=0\"\n        },\n        \"columns\": {\n          \"mappingMode\": \"defineBelow\",\n          \"value\": {\n            \"speedIndex\": \"={{ $('Extract Matrix').item.json.speedIndex }}\",\n            \"date\": \"={{ $('Extract Matrix').item.json.date }}\",\n            \"url\": \"={{ $('Split In Batches').item.json.url }}\",\n            \"LCP\": \"={{ $('Extract Matrix').item.json.LCP }}\",\n            \"FCP\": \"={{ $('Extract Matrix').item.json.FCP }}\"\n          },\n          \"matchingColumns\": [],\n          \"schema\": [\n            {\n              \"id\": \"url\",\n              \"displayName\": \"url\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"LCP\",\n              \"displayName\": \"LCP\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true,\n              \"removed\": false\n            },\n            {\n              \"id\": \"speedIndex\",\n              \"displayName\": \"speedIndex\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"FCP\",\n              \"displayName\": \"FCP\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true,\n              \"removed\": false\n            },\n            {\n              \"id\": \"date\",\n              \"displayName\": \"date\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            }\n          ],\n          \"attemptToConvertTypes\": false,\n          \"convertFieldsToString\": false\n        },\n        \"options\": {\n          \"useAppend\": true\n        }\n      },\n      \"type\": \"n8n-nodes-base.googleSheets\",\n      \"typeVersion\": 4.6,\n      \"position\": [\n        176,\n        -224\n      ],\n      \"id\": \"9ff7730d-29d7-4472-8aa1-98970c8a2af4\",\n      \"name\": \"Append row in sheet\",\n      \"credentials\": {\n        \"googleSheetsOAuth2Api\": {\n          \"id\": \"ePIuR5AYAEPReaa2\",\n          \"name\": \"Google Sheets account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"options\": {}\n      },\n      \"id\": \"1ecc6f84-f2e0-48f4-bd23-263c65f1d1de\",\n      \"name\": \"Split In Batches1\",\n      \"type\": \"n8n-nodes-base.splitInBatches\",\n      \"typeVersion\": 1,\n      \"position\": [\n        288,\n        -64\n      ]\n    },\n    {\n      \"parameters\": {},\n      \"type\": \"n8n-nodes-base.manualTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [\n        -608,\n        -64\n      ],\n      \"id\": \"6a26941b-b841-4437-bd51-51585344f99b\",\n      \"name\": \"When clicking ‘Execute workflow’\"\n    }\n  ],\n  \"pinData\": {},\n  \"connections\": {\n    \"Start URLs\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Split In Batches\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Split In Batches\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Check PageSpeed\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Check PageSpeed\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Wait\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Wait\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Extract Matrix\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Extract Matrix\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Search files and folders\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Search files and folders\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Append row in sheet\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Append row in sheet\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Split In Batches1\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"When clicking ‘Execute workflow’\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Start URLs\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    }\n  },\n  \"active\": false,\n  \"settings\": {\n    \"executionOrder\": \"v1\"\n  },\n  \"versionId\": \"7318e0f8-f63c-4506-a3db-db5d6b6aeae8\",\n  \"meta\": {\n    \"templateCredsSetupCompleted\": true,\n    \"instanceId\": \"ba32abdf9fab06f1014f13eb1257fd7da35ad59e027a52f93e42f70e9fc8dc85\"\n  },\n  \"id\": \"yEatktbKAKxviiAA\",\n  \"tags\": []\n}"
+{
+  "name": "Pagespeed Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "url",
+              "value": "https://ridwaninstitute.co.id/id/sinta-2-jurnal-akuntansi/"
+            },
+            {
+              "name": "url",
+              "value": "https://ridwaninstitute.co.id/daftar-jurnal-sinta-4/"
+            },
+            {
+              "name": "url",
+              "value": "https://ridwaninstitute.co.id/id/publisher-jurnal-internasional/"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": false
+        }
+      },
+      "id": "fe906302-6f1c-4cc2-9b9f-25ad7f04cb72",
+      "name": "Start URLs",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "id": "3a08d808-bd42-42d9-a7a4-31f4aebfde45",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://www.google.com/&strategy=mobile&category=performance&key=AIzaSyCCXbKc_MfvKEkpeoNMjRBIRgNJSNP0F5g",
+        "options": {}
+      },
+      "id": "ccbc741b-5531-4e89-855b-6f39896926fd",
+      "name": "Check PageSpeed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -272,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "unit": "seconds"
+      },
+      "id": "0a4a1a88-07ba-40ec-8ed8-5bfd46586dd4",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -64
+      ],
+      "webhookId": "00f8c794-8ae9-45e5-a0a9-d3a5f82fc67c"
+    },
+    {
+      "parameters": {
+        "jsCode": "// PSI -> row siap ke Sheets (detik utk FCP/LCP/SI)\nreturn items.map(item => {\n  const r  = item.json;\n  const lh = r?.lighthouseResult || {};\n  const audits = lh.audits || {};\n\n  const num = (key, div = 1000, fix = 1) => {\n    const v = audits[key]?.numericValue;\n    if (v == null || isNaN(v)) return null;\n    return Number((Number(v) / div).toFixed(fix));\n  };\n\n  return {\n    json: {\n      url: r.id || r.requestedUrl || '—',\n      // sesuai header di sheet (case-sensitive):\n      LCP:        num('largest-contentful-paint'),\n      speedIndex: num('speed-index'),\n      FCP:        num('first-contentful-paint'),\n      date: new Date().toISOString().slice(0,10)\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        -224
+      ],
+      "id": "11e539b0-8cbf-4b71-8895-dd1fb635f04c",
+      "name": "Extract Matrix"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "name = 'Pagespeed Automation' \nand mimeType = 'application/vnd.google-apps.spreadsheet' \nand trashed = false",
+        "returnAll": true,
+        "filter": {},
+        "options": {
+          "fields": [
+            "id",
+            "name"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        64,
+        -64
+      ],
+      "id": "a32911d9-36bb-42c5-98a1-0ecc7c71c199",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "a1ncFrnWNyObKTGX",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1B1syvm7aPj5J1KroNgkLm7QiuEQ0TvN3WCW3DfxgCu8",
+          "mode": "list",
+          "cachedResultName": "Pagespeed Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1B1syvm7aPj5J1KroNgkLm7QiuEQ0TvN3WCW3DfxgCu8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1B1syvm7aPj5J1KroNgkLm7QiuEQ0TvN3WCW3DfxgCu8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "speedIndex": "={{ $('Extract Matrix').item.json.speedIndex }}",
+            "date": "={{ $('Extract Matrix').item.json.date }}",
+            "url": "={{ $('Split In Batches').item.json.url }}",
+            "LCP": "={{ $('Extract Matrix').item.json.LCP }}",
+            "FCP": "={{ $('Extract Matrix').item.json.FCP }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LCP",
+              "displayName": "LCP",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "speedIndex",
+              "displayName": "speedIndex",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "FCP",
+              "displayName": "FCP",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        176,
+        -224
+      ],
+      "id": "9ff7730d-29d7-4472-8aa1-98970c8a2af4",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ePIuR5AYAEPReaa2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "1ecc6f84-f2e0-48f4-bd23-263c65f1d1de",
+      "name": "Split In Batches1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [
+        288,
+        -64
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        -64
+      ],
+      "id": "6a26941b-b841-4437-bd51-51585344f99b",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start URLs": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Check PageSpeed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check PageSpeed": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Extract Matrix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Matrix": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Start URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7318e0f8-f63c-4506-a3db-db5d6b6aeae8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ba32abdf9fab06f1014f13eb1257fd7da35ad59e027a52f93e42f70e9fc8dc85"
+  },
+  "id": "yEatktbKAKxviiAA",
+  "tags": []
+}

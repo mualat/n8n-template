@@ -1,1 +1,922 @@
-"{\n  \"name\": \"AI Agent Template v1\",\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"promptType\": \"define\",\n        \"text\": \"={{ $json.message.text }}\\n{{ $json.text }}\\n{{ $json.content }}\",\n        \"options\": {\n          \"systemMessage\": \"=### SYSTEM MESSAGE AI AGENT KEUANGAN – VERSI 2\\n\\nKamu adalah asisten pencatat keuangan yang sangat patuh pada prosedur, teliti, dan tidak pernah melewati satu langkah pun. Tugasmu adalah menjalankan prosedur untuk mencatat, mengubah, atau menghapus transaksi di Google Sheet.\\n\\n**ATURAN PALING UTAMA: Ikuti PROSEDUR WAJIB di bawah ini tanpa kecuali. Jangan pernah berasumsi atau melewati langkah apa pun, terutama langkah konfirmasi pengguna.**\\n\\nGunakan tools berikut HANYA jika diperintahkan dalam prosedur:\\n* `Create Data`\\n* `Read Data`\\n* `Update Data`\\n* `Delete Data`\\n\\n---\\n\\n### 📅 PROSEDUR WAJIB: PENCATATAN BARU\\n\\n**LANGKAH 1: Analisis & Pengambilan Data**\\n1.  Analisis perintah user untuk mendapatkan **Detail**, **Jenis**, dan **Kategori** transaksi.\\n2.  Gunakan tool `Read Data` untuk mengambil **Nomor Transaksi Terakhir** dan **Sisa Saldo Terakhir** dari Google Sheet.\\n\\n**LANGKAH 2: Persiapan Draf Transaksi**\\nSiapkan semua kolom berikut:\\n* **Nomor Transaksi**: Nomor terakhir + 1.\\n* **Tanggal**: `{{ new Date(new Date().getTime() + 7 * 60 * 60 * 1000).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}`\\n* **Detail Transaksi**: Sesuai input user.\\n* **Jenis Transaksi**: Pemasukan atau Pengeluaran.\\n* **Kategori Transaksi**: Sesuai analisis (misal: Makan, Transportasi).\\n* **Nominal**: Format `RpX.XXX.XXX` atau `-RpX.XXX.XXX`.\\n* **Sisa Saldo**: Saldo terakhir +/- Nominal baru.\\n* **Chat ID (WAJIB DIISI)**: `{{ $json.message.chat.id }}`\\n\\n**LANGKAH 3: LANGKAH GERBANG KONFIRMASI (JANGAN PERNAH DILEWATI)**\\n1.  Tampilkan ringkasan dari **LANGKAH 2** kepada user menggunakan format yang telah ditentukan.\\n2.  Tunggu respons dari user.\\n3.  **Kamu dilarang keras menggunakan tool `Create Data` sebelum langkah ini selesai dan user memberikan jawaban afirmatif (`ya`, `lanjut`, `ok`).**\\n\\n**LANGKAH 4: Eksekusi Final**\\n1.  HANYA SETELAH user menjawab `ya` pada LANGKAH 3, gunakan tool `Create Data` dengan semua informasi dari LANGKAH 2.\\n2.  Setelah tool berhasil dieksekusi, berikan pesan singkat: \\\"✅ Transaksi berhasil dicatat.\\\"\\n\\n---\\n\\n### ✏️ PROSEDUR WAJIB: UPDATE DATA\\n\\n1.  **Identifikasi & Verifikasi**: Minta **Nomor Transaksi**, lalu gunakan `Read Data` untuk verifikasi.\\n2.  **Konfirmasi Perubahan**: Tampilkan perbandingan data lama vs. baru, lalu **tunggu konfirmasi `ya` dari user.** Jangan lanjutkan tanpa konfirmasi.\\n3.  **Eksekusi**: Setelah user setuju, gunakan tool `Update Data`.\\n\\n---\\n\\n### 🗑️ PROSEDUR WAJIB: HAPUS DATA\\n\\n1.  **Identifikasi & Verifikasi**: Minta **Nomor Transaksi**, lalu gunakan `Read Data` untuk menampilkan ringkasan data yang akan dihapus.\\n2.  **Tunggu Konfirmasi**: **Tunggu jawaban `ya` dari user.** Jangan lanjutkan tanpanya.\\n3.  **Eksekusi**: Setelah user setuju, gunakan tool `Delete Data`.\\n\\n---\\n\\n### 📤 FORMAT OUTPUT KONFIRMASI:\\n\\n**Tambah:**\\n📈 Berikut rincian transaksi yang akan dicatat:\\n\\nJenis: Pengeluaran\\n\\nKategori: Makan\\n\\nNominal: -Rp50.000\\n\\nTanggal: 4 Juli 2025\\n\\nSisa Saldo: Rp4.878.000\\n\\nKetik ya untuk mencatat, atau batal untuk membatalkan.\\n\\n**Ubah:**\\nTransaksi nomor 4 akan diperbarui:\\n\\nNominal: -Rp72.000 → -Rp70.000\\n\\nKetik ya untuk menyimpan perubahan, atau batal untuk membatalkan.\\n\\n**Hapus:**\\n🗑️ Transaksi berikut akan dihapus:\\n\\nNomor: 4\\n\\nKategori: Makan\\n\\nNominal: -Rp72.000\\n\\nTanggal: 4 Juli 2025\\n\\nKetik ya untuk menghapus, atau batal untuk membatalkan.\"\n        }\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.agent\",\n      \"typeVersion\": 2,\n      \"position\": [\n        5340,\n        -660\n      ],\n      \"id\": \"7ce75ec8-75e7-460f-8779-3cb246c03c75\",\n      \"name\": \"AI Agent\"\n    },\n    {\n      \"parameters\": {\n        \"model\": {\n          \"__rl\": true,\n          \"mode\": \"list\",\n          \"value\": \"gpt-4o-mini\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.lmChatOpenAi\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        5340,\n        -520\n      ],\n      \"id\": \"57bedf32-a76b-4a04-9df0-b5d697b77654\",\n      \"name\": \"OpenAI Chat Model\",\n      \"credentials\": {\n        \"openAiApi\": {\n          \"id\": \"qjvXB7Td17WC3S33\",\n          \"name\": \"OpenAi account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"sessionIdType\": \"customKey\",\n        \"sessionKey\": \"={{ $('Telegram Trigger').item.json.message.chat.id }}\"\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.memoryBufferWindow\",\n      \"typeVersion\": 1.3,\n      \"position\": [\n        5500,\n        -520\n      ],\n      \"id\": \"67746a16-6c49-454c-aab9-4eb08cca653f\",\n      \"name\": \"Simple Memory\"\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"update\",\n        \"documentId\": {\n          \"__rl\": true,\n          \"value\": \"1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Data Keuangan Pribadi\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit?usp=drivesdk\"\n        },\n        \"sheetName\": {\n          \"__rl\": true,\n          \"value\": \"gid=0\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Master Sheet\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit#gid=0\"\n        },\n        \"columns\": {\n          \"mappingMode\": \"defineBelow\",\n          \"value\": {\n            \"Nomor Transaksi\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Nomor_Transaksi__using_to_match_', ``, 'string') }}\",\n            \"Chat ID\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Chat_ID', ``, 'string') }}\",\n            \"Tanggal\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tanggal', ``, 'string') }}\",\n            \"Detail Transaksi\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Detail_Transaksi', ``, 'string') }}\",\n            \"Jenis Transaksi\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Jenis_Transaksi', ``, 'string') }}\",\n            \"Kategori Transaksi\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Kategori_Transaksi', ``, 'string') }}\",\n            \"Nominal\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Nominal', ``, 'string') }}\",\n            \"Sisa Saldo\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sisa_Saldo', ``, 'string') }}\"\n          },\n          \"matchingColumns\": [\n            \"Nomor Transaksi\"\n          ],\n          \"schema\": [\n            {\n              \"id\": \"Chat ID\",\n              \"displayName\": \"Chat ID\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Nomor Transaksi\",\n              \"displayName\": \"Nomor Transaksi\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true,\n              \"removed\": false\n            },\n            {\n              \"id\": \"Tanggal\",\n              \"displayName\": \"Tanggal\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Detail Transaksi\",\n              \"displayName\": \"Detail Transaksi\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Jenis Transaksi\",\n              \"displayName\": \"Jenis Transaksi\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Kategori Transaksi\",\n              \"displayName\": \"Kategori Transaksi\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Nominal\",\n              \"displayName\": \"Nominal\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Sisa Saldo\",\n              \"displayName\": \"Sisa Saldo\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"row_number\",\n              \"displayName\": \"row_number\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true,\n              \"readOnly\": true,\n              \"removed\": true\n            }\n          ],\n          \"attemptToConvertTypes\": false,\n          \"convertFieldsToString\": false\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.googleSheetsTool\",\n      \"typeVersion\": 4.6,\n      \"position\": [\n        5460,\n        -960\n      ],\n      \"id\": \"369d7d41-f1c3-42ca-a13a-a8bc3aa340d7\",\n      \"name\": \"Update Data\",\n      \"credentials\": {\n        \"googleSheetsOAuth2Api\": {\n          \"id\": \"NXQaR98yL6S9yo8V\",\n          \"name\": \"Mustafa\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"remove\",\n        \"documentId\": {\n          \"__rl\": true,\n          \"value\": \"1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Data Keuangan Pribadi\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit?usp=drivesdk\"\n        },\n        \"sheetName\": {\n          \"__rl\": true,\n          \"value\": \"gid=0\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Master Sheet\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit#gid=0\"\n        }\n      },\n      \"type\": \"n8n-nodes-base.googleSheetsTool\",\n      \"typeVersion\": 4.6,\n      \"position\": [\n        5560,\n        -960\n      ],\n      \"id\": \"f1a0fa5d-8b91-46be-9142-528393d5d053\",\n      \"name\": \"Delete Data\",\n      \"credentials\": {\n        \"googleSheetsOAuth2Api\": {\n          \"id\": \"NXQaR98yL6S9yo8V\",\n          \"name\": \"Mustafa\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"documentId\": {\n          \"__rl\": true,\n          \"value\": \"1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Data Keuangan Pribadi\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit?usp=drivesdk\"\n        },\n        \"sheetName\": {\n          \"__rl\": true,\n          \"value\": \"gid=0\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Master Sheet\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit#gid=0\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.googleSheetsTool\",\n      \"typeVersion\": 4.6,\n      \"position\": [\n        5360,\n        -960\n      ],\n      \"id\": \"02b6318d-d10b-4b2e-9cf4-545ad4d7b674\",\n      \"name\": \"Read Data\",\n      \"credentials\": {\n        \"googleSheetsOAuth2Api\": {\n          \"id\": \"NXQaR98yL6S9yo8V\",\n          \"name\": \"Mustafa\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"chatId\": \"={{ $('Telegram Trigger').item.json.message.chat.id }}\",\n        \"text\": \"={{ $json.output }}\",\n        \"additionalFields\": {\n          \"appendAttribution\": false\n        }\n      },\n      \"type\": \"n8n-nodes-base.telegram\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        5740,\n        -660\n      ],\n      \"id\": \"1e1958e9-f209-4091-93b9-d00dc83b1f6b\",\n      \"name\": \"Telegram\",\n      \"webhookId\": \"2c2dea6e-2d5a-4e4e-aae6-fd9bda3719f9\",\n      \"credentials\": {\n        \"telegramApi\": {\n          \"id\": \"gpotbHzv2I6OrjTB\",\n          \"name\": \"Mustafa Personal Assistant\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"resource\": \"file\",\n        \"fileId\": \"={{ $json.message.voice.file_id }}\"\n      },\n      \"type\": \"n8n-nodes-base.telegram\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        4680,\n        -760\n      ],\n      \"id\": \"eac8b2eb-35fe-4a1b-98a5-0d3e1fad1e2a\",\n      \"name\": \"Get Audio\",\n      \"webhookId\": \"23b9291f-5769-4938-b835-6fe2ec0aafd4\",\n      \"credentials\": {\n        \"telegramApi\": {\n          \"id\": \"gpotbHzv2I6OrjTB\",\n          \"name\": \"Mustafa Personal Assistant\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"updates\": [\n          \"message\"\n        ],\n        \"additionalFields\": {}\n      },\n      \"type\": \"n8n-nodes-base.telegramTrigger\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        4300,\n        -660\n      ],\n      \"id\": \"fd0ba4ab-4bad-45e1-b202-3852caaab0f6\",\n      \"name\": \"Telegram Trigger\",\n      \"webhookId\": \"d762811c-97b0-4534-aeda-5b35bce8a531\",\n      \"credentials\": {\n        \"telegramApi\": {\n          \"id\": \"gpotbHzv2I6OrjTB\",\n          \"name\": \"Mustafa Personal Assistant\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"resource\": \"audio\",\n        \"operation\": \"transcribe\",\n        \"options\": {\n          \"language\": \"id\"\n        }\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.openAi\",\n      \"typeVersion\": 1.8,\n      \"position\": [\n        5000,\n        -760\n      ],\n      \"id\": \"78de8cd7-92b3-473e-a621-e4e731e7e7db\",\n      \"name\": \"Analyze Audio\",\n      \"credentials\": {\n        \"openAiApi\": {\n          \"id\": \"qjvXB7Td17WC3S33\",\n          \"name\": \"OpenAi account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"rules\": {\n          \"values\": [\n            {\n              \"conditions\": {\n                \"options\": {\n                  \"caseSensitive\": true,\n                  \"leftValue\": \"\",\n                  \"typeValidation\": \"strict\",\n                  \"version\": 2\n                },\n                \"conditions\": [\n                  {\n                    \"leftValue\": \"={{ $json.message.voice.file_id }}\",\n                    \"rightValue\": \"\",\n                    \"operator\": {\n                      \"type\": \"string\",\n                      \"operation\": \"exists\",\n                      \"singleValue\": true\n                    },\n                    \"id\": \"483dbe5e-d1b1-42d1-8a94-f326d5717be0\"\n                  }\n                ],\n                \"combinator\": \"and\"\n              }\n            },\n            {\n              \"conditions\": {\n                \"options\": {\n                  \"caseSensitive\": true,\n                  \"leftValue\": \"\",\n                  \"typeValidation\": \"strict\",\n                  \"version\": 2\n                },\n                \"conditions\": [\n                  {\n                    \"id\": \"e2085b71-2dab-41ee-98bc-0b07816a8a01\",\n                    \"leftValue\": \"={{ $json.message.text }}\",\n                    \"rightValue\": \"\",\n                    \"operator\": {\n                      \"type\": \"string\",\n                      \"operation\": \"exists\",\n                      \"singleValue\": true\n                    }\n                  }\n                ],\n                \"combinator\": \"and\"\n              }\n            },\n            {\n              \"conditions\": {\n                \"options\": {\n                  \"caseSensitive\": true,\n                  \"leftValue\": \"\",\n                  \"typeValidation\": \"strict\",\n                  \"version\": 2\n                },\n                \"conditions\": [\n                  {\n                    \"id\": \"796843dc-4f53-4bf1-b516-7d8656840073\",\n                    \"leftValue\": \"={{ $json.message.photo[0].file_id }}\",\n                    \"rightValue\": \"\",\n                    \"operator\": {\n                      \"type\": \"string\",\n                      \"operation\": \"exists\",\n                      \"singleValue\": true\n                    }\n                  }\n                ],\n                \"combinator\": \"and\"\n              }\n            }\n          ]\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.switch\",\n      \"typeVersion\": 3.2,\n      \"position\": [\n        4500,\n        -660\n      ],\n      \"id\": \"1183cf59-e80d-4559-a286-474f5332266a\",\n      \"name\": \"Switch\"\n    },\n    {\n      \"parameters\": {\n        \"resource\": \"image\",\n        \"operation\": \"analyze\",\n        \"modelId\": {\n          \"__rl\": true,\n          \"value\": \"chatgpt-4o-latest\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"CHATGPT-4O-LATEST\"\n        },\n        \"text\": \"Lihat isi gambar struk ini.\",\n        \"imageUrls\": \"={{ $json.webContentLink }}\",\n        \"options\": {}\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.openAi\",\n      \"typeVersion\": 1.8,\n      \"position\": [\n        5000,\n        -560\n      ],\n      \"id\": \"7e10af72-bb53-4856-8c0d-94778e11499e\",\n      \"name\": \"Analyze Image\",\n      \"credentials\": {\n        \"openAiApi\": {\n          \"id\": \"qjvXB7Td17WC3S33\",\n          \"name\": \"OpenAi account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"content\": \"## Input \\nGanti dengan credentials bot Telegram punya kamu.\\n\\n[🔗 Klik di sini buat bikin bot Telegram!](https://telegram.me/BotFather)\\n\\n**PENTING**:\\nJika mengirim gambar, pastikan gambar dalam kualitas tinggi.\",\n        \"height\": 880,\n        \"width\": 190,\n        \"color\": 4\n      },\n      \"type\": \"n8n-nodes-base.stickyNote\",\n      \"position\": [\n        4260,\n        -1260\n      ],\n      \"typeVersion\": 1,\n      \"id\": \"10c29c0a-9a50-479f-9d1a-dbc5f5c2fdae\",\n      \"name\": \"Sticky Note2\"\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"append\",\n        \"documentId\": {\n          \"__rl\": true,\n          \"value\": \"1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Data Keuangan Pribadi\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit?usp=drivesdk\"\n        },\n        \"sheetName\": {\n          \"__rl\": true,\n          \"value\": \"gid=0\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Master Sheet\",\n          \"cachedResultUrl\": \"https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit#gid=0\"\n        },\n        \"columns\": {\n          \"mappingMode\": \"defineBelow\",\n          \"value\": {\n            \"Chat ID\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Chat_ID', ``, 'string') }}\",\n            \"Nomor Transaksi\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Nomor_Transaksi', ``, 'string') }}\",\n            \"Tanggal\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tanggal', ``, 'string') }}\",\n            \"Detail Transaksi\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Detail_Transaksi', ``, 'string') }}\",\n            \"Jenis Transaksi\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Jenis_Transaksi', ``, 'string') }}\",\n            \"Kategori Transaksi\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Kategori_Transaksi', ``, 'string') }}\",\n            \"Nominal\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Nominal', ``, 'string') }}\",\n            \"Sisa Saldo\": \"={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sisa_Saldo', ``, 'string') }}\"\n          },\n          \"matchingColumns\": [],\n          \"schema\": [\n            {\n              \"id\": \"Chat ID\",\n              \"displayName\": \"Chat ID\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Nomor Transaksi\",\n              \"displayName\": \"Nomor Transaksi\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Tanggal\",\n              \"displayName\": \"Tanggal\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Detail Transaksi\",\n              \"displayName\": \"Detail Transaksi\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Jenis Transaksi\",\n              \"displayName\": \"Jenis Transaksi\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Kategori Transaksi\",\n              \"displayName\": \"Kategori Transaksi\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Nominal\",\n              \"displayName\": \"Nominal\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            },\n            {\n              \"id\": \"Sisa Saldo\",\n              \"displayName\": \"Sisa Saldo\",\n              \"required\": false,\n              \"defaultMatch\": false,\n              \"display\": true,\n              \"type\": \"string\",\n              \"canBeUsedToMatch\": true\n            }\n          ],\n          \"attemptToConvertTypes\": false,\n          \"convertFieldsToString\": false\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.googleSheetsTool\",\n      \"typeVersion\": 4.6,\n      \"position\": [\n        5260,\n        -960\n      ],\n      \"id\": \"dc09e459-d527-43ee-b51c-992a13b045c3\",\n      \"name\": \"Create Data\",\n      \"credentials\": {\n        \"googleSheetsOAuth2Api\": {\n          \"id\": \"NXQaR98yL6S9yo8V\",\n          \"name\": \"Mustafa\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"content\": \"## Data Filter & Processing\\n**Requirement**\\nPastikan credential API Open AI kamu sudah terpasang.\\n\\n[🔗 Klik di sini buat beli API Open AI!](https://openai.com/api/)\\n\\n\\n**Node Analyze Audio & Image**\\n1. Ganti dengan credential API Open AI punya kamu.\\n---\\n**Node Get Audio & Image**\\n1. Ganti dengan credential bot Telegram punya kamu.\\n---\\n**Node Upload File**\\n1. Ganti dengan credential Google Drive punya kamu. \\n2. Ganti parent folder dengan folder struk yang kamu mau.\",\n        \"height\": 880,\n        \"width\": 700,\n        \"color\": 5\n      },\n      \"type\": \"n8n-nodes-base.stickyNote\",\n      \"position\": [\n        4480,\n        -1260\n      ],\n      \"typeVersion\": 1,\n      \"id\": \"bfe3a913-ae34-4acb-9e1c-1d0df4f3ca2a\",\n      \"name\": \"Sticky Note1\"\n    },\n    {\n      \"parameters\": {\n        \"content\": \"## AI Agent\\n\\n**Node Open AI**\\n1. Ganti dengan credential API Open AI punya kamu.\",\n        \"height\": 420,\n        \"width\": 480\n      },\n      \"type\": \"n8n-nodes-base.stickyNote\",\n      \"position\": [\n        5200,\n        -800\n      ],\n      \"typeVersion\": 1,\n      \"id\": \"fb3da6f1-68cc-466b-8938-d0554c023fd1\",\n      \"name\": \"Sticky Note3\"\n    },\n    {\n      \"parameters\": {\n        \"content\": \"## AI Agent Tools\\n**Requirement**\\nPastikan credential Google Drive & Google Sheet kamu sudah terpasang.\\n\\n**Node Google Sheet**\\n1. Ganti kolom \\\"Document\\\" sesuai dengan nama dokumen sheet kamu di Google Drive. (Kalau kamu pakai template, berarti \\\"Data Keuangan Pribadi\\\")\\n2. Ganti kolom \\\"Sheet\\\" sesuai dengan nama sheet kamu di Google Sheet. (Kalau kamu pakai template, berarti \\\"Master Sheet\\\")\\n3. Di semua kolom di \\\"values to send\\\" dan \\\"values to update\\\" klik icon bintang-bintang \\\"Let the model define this parameter\\\"\",\n        \"height\": 440,\n        \"width\": 480,\n        \"color\": 6\n      },\n      \"type\": \"n8n-nodes-base.stickyNote\",\n      \"position\": [\n        5200,\n        -1260\n      ],\n      \"typeVersion\": 1,\n      \"id\": \"f4ba28b3-eb8f-48ea-8d42-4341f05d1359\",\n      \"name\": \"Sticky Note4\"\n    },\n    {\n      \"parameters\": {\n        \"content\": \"## Output\\n\",\n        \"height\": 880,\n        \"width\": 170,\n        \"color\": 4\n      },\n      \"type\": \"n8n-nodes-base.stickyNote\",\n      \"position\": [\n        5700,\n        -1260\n      ],\n      \"typeVersion\": 1,\n      \"id\": \"aabd1ea9-28ef-4f84-a6eb-4bd0a2094935\",\n      \"name\": \"Sticky Note5\"\n    },\n    {\n      \"parameters\": {\n        \"name\": \"={{ new Date(new Date().getTime() + 7 * 60 * 60 * 1000).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) }} WIB\",\n        \"driveId\": {\n          \"__rl\": true,\n          \"mode\": \"list\",\n          \"value\": \"My Drive\"\n        },\n        \"folderId\": {\n          \"__rl\": true,\n          \"value\": \"1xCclifrX-5GgdxAi3vH4v3kAzCtUlNUm\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"Foto Struk\",\n          \"cachedResultUrl\": \"https://drive.google.com/drive/folders/1xCclifrX-5GgdxAi3vH4v3kAzCtUlNUm\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.googleDrive\",\n      \"typeVersion\": 3,\n      \"position\": [\n        4840,\n        -560\n      ],\n      \"id\": \"9956b935-1afe-4ea2-a032-795988935ae5\",\n      \"name\": \"Upload file\",\n      \"credentials\": {\n        \"googleDriveOAuth2Api\": {\n          \"id\": \"ZLHNia4xWGSTe5w6\",\n          \"name\": \"Mustafa\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"resource\": \"file\",\n        \"fileId\": \"={{ $json.message.photo[$json.message.photo.length - 1].file_id }}\"\n      },\n      \"type\": \"n8n-nodes-base.telegram\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        4680,\n        -560\n      ],\n      \"id\": \"3f8d3e97-3652-457f-8530-63de37e5ac9b\",\n      \"name\": \"Get Image\",\n      \"webhookId\": \"a1864c31-ed65-4f5c-801d-ebbfdc34764d\",\n      \"credentials\": {\n        \"telegramApi\": {\n          \"id\": \"gpotbHzv2I6OrjTB\",\n          \"name\": \"Mustafa Personal Assistant\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"content\": \"# CATATAN PENTING\\n## AI Agent ini mungkin bikin error. kalau kamu ketemu error-nya, langsung DM gue aja di @mustafabercerita ya! Nanti dibenerin. 👌\",\n        \"width\": 1620\n      },\n      \"type\": \"n8n-nodes-base.stickyNote\",\n      \"position\": [\n        4260,\n        -1440\n      ],\n      \"typeVersion\": 1,\n      \"id\": \"990918bb-4df1-4895-9a3d-ec243b2d7e2a\",\n      \"name\": \"Sticky Note\"\n    }\n  ],\n  \"pinData\": {},\n  \"connections\": {\n    \"OpenAI Chat Model\": {\n      \"ai_languageModel\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_languageModel\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Simple Memory\": {\n      \"ai_memory\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_memory\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Update Data\": {\n      \"ai_tool\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_tool\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Delete Data\": {\n      \"ai_tool\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_tool\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Read Data\": {\n      \"ai_tool\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_tool\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"AI Agent\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Telegram\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Get Audio\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Analyze Audio\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Telegram Trigger\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Switch\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Analyze Audio\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Switch\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Get Audio\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ],\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ],\n        [\n          {\n            \"node\": \"Get Image\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Analyze Image\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Create Data\": {\n      \"ai_tool\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_tool\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Upload file\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Analyze Image\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Get Image\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Upload file\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    }\n  },\n  \"active\": true,\n  \"settings\": {\n    \"executionOrder\": \"v1\"\n  },\n  \"versionId\": \"734a772e-d559-4276-877e-3c56a33c1046\",\n  \"meta\": {\n    \"templateCredsSetupCompleted\": true,\n    \"instanceId\": \"3ffd4db000e836b2addc5505965a20b76dc3b13a9f7cb2089936f8d2b1e072f6\"\n  },\n  \"id\": \"Jowxjqga1sBDxbsT\",\n  \"tags\": []\n}"
+{
+  "name": "AI Agent Template v1",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}\n{{ $json.text }}\n{{ $json.content }}",
+        "options": {
+          "systemMessage": "=### SYSTEM MESSAGE AI AGENT KEUANGAN – VERSI 2\n\nKamu adalah asisten pencatat keuangan yang sangat patuh pada prosedur, teliti, dan tidak pernah melewati satu langkah pun. Tugasmu adalah menjalankan prosedur untuk mencatat, mengubah, atau menghapus transaksi di Google Sheet.\n\n**ATURAN PALING UTAMA: Ikuti PROSEDUR WAJIB di bawah ini tanpa kecuali. Jangan pernah berasumsi atau melewati langkah apa pun, terutama langkah konfirmasi pengguna.**\n\nGunakan tools berikut HANYA jika diperintahkan dalam prosedur:\n* `Create Data`\n* `Read Data`\n* `Update Data`\n* `Delete Data`\n\n---\n\n### 📅 PROSEDUR WAJIB: PENCATATAN BARU\n\n**LANGKAH 1: Analisis & Pengambilan Data**\n1.  Analisis perintah user untuk mendapatkan **Detail**, **Jenis**, dan **Kategori** transaksi.\n2.  Gunakan tool `Read Data` untuk mengambil **Nomor Transaksi Terakhir** dan **Sisa Saldo Terakhir** dari Google Sheet.\n\n**LANGKAH 2: Persiapan Draf Transaksi**\nSiapkan semua kolom berikut:\n* **Nomor Transaksi**: Nomor terakhir + 1.\n* **Tanggal**: `{{ new Date(new Date().getTime() + 7 * 60 * 60 * 1000).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}`\n* **Detail Transaksi**: Sesuai input user.\n* **Jenis Transaksi**: Pemasukan atau Pengeluaran.\n* **Kategori Transaksi**: Sesuai analisis (misal: Makan, Transportasi).\n* **Nominal**: Format `RpX.XXX.XXX` atau `-RpX.XXX.XXX`.\n* **Sisa Saldo**: Saldo terakhir +/- Nominal baru.\n* **Chat ID (WAJIB DIISI)**: `{{ $json.message.chat.id }}`\n\n**LANGKAH 3: LANGKAH GERBANG KONFIRMASI (JANGAN PERNAH DILEWATI)**\n1.  Tampilkan ringkasan dari **LANGKAH 2** kepada user menggunakan format yang telah ditentukan.\n2.  Tunggu respons dari user.\n3.  **Kamu dilarang keras menggunakan tool `Create Data` sebelum langkah ini selesai dan user memberikan jawaban afirmatif (`ya`, `lanjut`, `ok`).**\n\n**LANGKAH 4: Eksekusi Final**\n1.  HANYA SETELAH user menjawab `ya` pada LANGKAH 3, gunakan tool `Create Data` dengan semua informasi dari LANGKAH 2.\n2.  Setelah tool berhasil dieksekusi, berikan pesan singkat: \"✅ Transaksi berhasil dicatat.\"\n\n---\n\n### ✏️ PROSEDUR WAJIB: UPDATE DATA\n\n1.  **Identifikasi & Verifikasi**: Minta **Nomor Transaksi**, lalu gunakan `Read Data` untuk verifikasi.\n2.  **Konfirmasi Perubahan**: Tampilkan perbandingan data lama vs. baru, lalu **tunggu konfirmasi `ya` dari user.** Jangan lanjutkan tanpa konfirmasi.\n3.  **Eksekusi**: Setelah user setuju, gunakan tool `Update Data`.\n\n---\n\n### 🗑️ PROSEDUR WAJIB: HAPUS DATA\n\n1.  **Identifikasi & Verifikasi**: Minta **Nomor Transaksi**, lalu gunakan `Read Data` untuk menampilkan ringkasan data yang akan dihapus.\n2.  **Tunggu Konfirmasi**: **Tunggu jawaban `ya` dari user.** Jangan lanjutkan tanpanya.\n3.  **Eksekusi**: Setelah user setuju, gunakan tool `Delete Data`.\n\n---\n\n### 📤 FORMAT OUTPUT KONFIRMASI:\n\n**Tambah:**\n📈 Berikut rincian transaksi yang akan dicatat:\n\nJenis: Pengeluaran\n\nKategori: Makan\n\nNominal: -Rp50.000\n\nTanggal: 4 Juli 2025\n\nSisa Saldo: Rp4.878.000\n\nKetik ya untuk mencatat, atau batal untuk membatalkan.\n\n**Ubah:**\nTransaksi nomor 4 akan diperbarui:\n\nNominal: -Rp72.000 → -Rp70.000\n\nKetik ya untuk menyimpan perubahan, atau batal untuk membatalkan.\n\n**Hapus:**\n🗑️ Transaksi berikut akan dihapus:\n\nNomor: 4\n\nKategori: Makan\n\nNominal: -Rp72.000\n\nTanggal: 4 Juli 2025\n\nKetik ya untuk menghapus, atau batal untuk membatalkan."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        5340,
+        -660
+      ],
+      "id": "7ce75ec8-75e7-460f-8779-3cb246c03c75",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        5340,
+        -520
+      ],
+      "id": "57bedf32-a76b-4a04-9df0-b5d697b77654",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "qjvXB7Td17WC3S33",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        5500,
+        -520
+      ],
+      "id": "67746a16-6c49-454c-aab9-4eb08cca653f",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE",
+          "mode": "list",
+          "cachedResultName": "Data Keuangan Pribadi",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Master Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nomor Transaksi": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Nomor_Transaksi__using_to_match_', ``, 'string') }}",
+            "Chat ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Chat_ID', ``, 'string') }}",
+            "Tanggal": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tanggal', ``, 'string') }}",
+            "Detail Transaksi": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Detail_Transaksi', ``, 'string') }}",
+            "Jenis Transaksi": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Jenis_Transaksi', ``, 'string') }}",
+            "Kategori Transaksi": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Kategori_Transaksi', ``, 'string') }}",
+            "Nominal": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Nominal', ``, 'string') }}",
+            "Sisa Saldo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sisa_Saldo', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "Nomor Transaksi"
+          ],
+          "schema": [
+            {
+              "id": "Chat ID",
+              "displayName": "Chat ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nomor Transaksi",
+              "displayName": "Nomor Transaksi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Detail Transaksi",
+              "displayName": "Detail Transaksi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jenis Transaksi",
+              "displayName": "Jenis Transaksi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kategori Transaksi",
+              "displayName": "Kategori Transaksi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nominal",
+              "displayName": "Nominal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sisa Saldo",
+              "displayName": "Sisa Saldo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        5460,
+        -960
+      ],
+      "id": "369d7d41-f1c3-42ca-a13a-a8bc3aa340d7",
+      "name": "Update Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NXQaR98yL6S9yo8V",
+          "name": "Mustafa"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "remove",
+        "documentId": {
+          "__rl": true,
+          "value": "1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE",
+          "mode": "list",
+          "cachedResultName": "Data Keuangan Pribadi",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Master Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit#gid=0"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        5560,
+        -960
+      ],
+      "id": "f1a0fa5d-8b91-46be-9142-528393d5d053",
+      "name": "Delete Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NXQaR98yL6S9yo8V",
+          "name": "Mustafa"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE",
+          "mode": "list",
+          "cachedResultName": "Data Keuangan Pribadi",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Master Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        5360,
+        -960
+      ],
+      "id": "02b6318d-d10b-4b2e-9cf4-545ad4d7b674",
+      "name": "Read Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NXQaR98yL6S9yo8V",
+          "name": "Mustafa"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        5740,
+        -660
+      ],
+      "id": "1e1958e9-f209-4091-93b9-d00dc83b1f6b",
+      "name": "Telegram",
+      "webhookId": "2c2dea6e-2d5a-4e4e-aae6-fd9bda3719f9",
+      "credentials": {
+        "telegramApi": {
+          "id": "gpotbHzv2I6OrjTB",
+          "name": "Mustafa Personal Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4680,
+        -760
+      ],
+      "id": "eac8b2eb-35fe-4a1b-98a5-0d3e1fad1e2a",
+      "name": "Get Audio",
+      "webhookId": "23b9291f-5769-4938-b835-6fe2ec0aafd4",
+      "credentials": {
+        "telegramApi": {
+          "id": "gpotbHzv2I6OrjTB",
+          "name": "Mustafa Personal Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        4300,
+        -660
+      ],
+      "id": "fd0ba4ab-4bad-45e1-b202-3852caaab0f6",
+      "name": "Telegram Trigger",
+      "webhookId": "d762811c-97b0-4534-aeda-5b35bce8a531",
+      "credentials": {
+        "telegramApi": {
+          "id": "gpotbHzv2I6OrjTB",
+          "name": "Mustafa Personal Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {
+          "language": "id"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        5000,
+        -760
+      ],
+      "id": "78de8cd7-92b3-473e-a621-e4e731e7e7db",
+      "name": "Analyze Audio",
+      "credentials": {
+        "openAiApi": {
+          "id": "qjvXB7Td17WC3S33",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "483dbe5e-d1b1-42d1-8a94-f326d5717be0"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e2085b71-2dab-41ee-98bc-0b07816a8a01",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "796843dc-4f53-4bf1-b516-7d8656840073",
+                    "leftValue": "={{ $json.message.photo[0].file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        4500,
+        -660
+      ],
+      "id": "1183cf59-e80d-4559-a286-474f5332266a",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "text": "Lihat isi gambar struk ini.",
+        "imageUrls": "={{ $json.webContentLink }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        5000,
+        -560
+      ],
+      "id": "7e10af72-bb53-4856-8c0d-94778e11499e",
+      "name": "Analyze Image",
+      "credentials": {
+        "openAiApi": {
+          "id": "qjvXB7Td17WC3S33",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Input \nGanti dengan credentials bot Telegram punya kamu.\n\n[🔗 Klik di sini buat bikin bot Telegram!](https://telegram.me/BotFather)\n\n**PENTING**:\nJika mengirim gambar, pastikan gambar dalam kualitas tinggi.",
+        "height": 880,
+        "width": 190,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4260,
+        -1260
+      ],
+      "typeVersion": 1,
+      "id": "10c29c0a-9a50-479f-9d1a-dbc5f5c2fdae",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE",
+          "mode": "list",
+          "cachedResultName": "Data Keuangan Pribadi",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Master Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PoQ_H1C8hGaySpX2-ONzwDwZ0bkbku4c3N-et3uQ0EE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Chat ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Chat_ID', ``, 'string') }}",
+            "Nomor Transaksi": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Nomor_Transaksi', ``, 'string') }}",
+            "Tanggal": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tanggal', ``, 'string') }}",
+            "Detail Transaksi": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Detail_Transaksi', ``, 'string') }}",
+            "Jenis Transaksi": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Jenis_Transaksi', ``, 'string') }}",
+            "Kategori Transaksi": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Kategori_Transaksi', ``, 'string') }}",
+            "Nominal": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Nominal', ``, 'string') }}",
+            "Sisa Saldo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sisa_Saldo', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Chat ID",
+              "displayName": "Chat ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nomor Transaksi",
+              "displayName": "Nomor Transaksi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Detail Transaksi",
+              "displayName": "Detail Transaksi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jenis Transaksi",
+              "displayName": "Jenis Transaksi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kategori Transaksi",
+              "displayName": "Kategori Transaksi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nominal",
+              "displayName": "Nominal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sisa Saldo",
+              "displayName": "Sisa Saldo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        5260,
+        -960
+      ],
+      "id": "dc09e459-d527-43ee-b51c-992a13b045c3",
+      "name": "Create Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NXQaR98yL6S9yo8V",
+          "name": "Mustafa"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Data Filter & Processing\n**Requirement**\nPastikan credential API Open AI kamu sudah terpasang.\n\n[🔗 Klik di sini buat beli API Open AI!](https://openai.com/api/)\n\n\n**Node Analyze Audio & Image**\n1. Ganti dengan credential API Open AI punya kamu.\n---\n**Node Get Audio & Image**\n1. Ganti dengan credential bot Telegram punya kamu.\n---\n**Node Upload File**\n1. Ganti dengan credential Google Drive punya kamu. \n2. Ganti parent folder dengan folder struk yang kamu mau.",
+        "height": 880,
+        "width": 700,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4480,
+        -1260
+      ],
+      "typeVersion": 1,
+      "id": "bfe3a913-ae34-4acb-9e1c-1d0df4f3ca2a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## AI Agent\n\n**Node Open AI**\n1. Ganti dengan credential API Open AI punya kamu.",
+        "height": 420,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5200,
+        -800
+      ],
+      "typeVersion": 1,
+      "id": "fb3da6f1-68cc-466b-8938-d0554c023fd1",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## AI Agent Tools\n**Requirement**\nPastikan credential Google Drive & Google Sheet kamu sudah terpasang.\n\n**Node Google Sheet**\n1. Ganti kolom \"Document\" sesuai dengan nama dokumen sheet kamu di Google Drive. (Kalau kamu pakai template, berarti \"Data Keuangan Pribadi\")\n2. Ganti kolom \"Sheet\" sesuai dengan nama sheet kamu di Google Sheet. (Kalau kamu pakai template, berarti \"Master Sheet\")\n3. Di semua kolom di \"values to send\" dan \"values to update\" klik icon bintang-bintang \"Let the model define this parameter\"",
+        "height": 440,
+        "width": 480,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5200,
+        -1260
+      ],
+      "typeVersion": 1,
+      "id": "f4ba28b3-eb8f-48ea-8d42-4341f05d1359",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Output\n",
+        "height": 880,
+        "width": 170,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5700,
+        -1260
+      ],
+      "typeVersion": 1,
+      "id": "aabd1ea9-28ef-4f84-a6eb-4bd0a2094935",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "name": "={{ new Date(new Date().getTime() + 7 * 60 * 60 * 1000).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) }} WIB",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1xCclifrX-5GgdxAi3vH4v3kAzCtUlNUm",
+          "mode": "list",
+          "cachedResultName": "Foto Struk",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1xCclifrX-5GgdxAi3vH4v3kAzCtUlNUm"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        4840,
+        -560
+      ],
+      "id": "9956b935-1afe-4ea2-a032-795988935ae5",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZLHNia4xWGSTe5w6",
+          "name": "Mustafa"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.photo[$json.message.photo.length - 1].file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4680,
+        -560
+      ],
+      "id": "3f8d3e97-3652-457f-8530-63de37e5ac9b",
+      "name": "Get Image",
+      "webhookId": "a1864c31-ed65-4f5c-801d-ebbfdc34764d",
+      "credentials": {
+        "telegramApi": {
+          "id": "gpotbHzv2I6OrjTB",
+          "name": "Mustafa Personal Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# CATATAN PENTING\n## AI Agent ini mungkin bikin error. kalau kamu ketemu error-nya, langsung DM gue aja di @mustafabercerita ya! Nanti dibenerin. 👌",
+        "width": 1620
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4260,
+        -1440
+      ],
+      "typeVersion": 1,
+      "id": "990918bb-4df1-4895-9a3d-ec243b2d7e2a",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Data": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Data": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Data": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Audio": {
+      "main": [
+        [
+          {
+            "node": "Analyze Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Audio": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Image": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Data": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Analyze Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "734a772e-d559-4276-877e-3c56a33c1046",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3ffd4db000e836b2addc5505965a20b76dc3b13a9f7cb2089936f8d2b1e072f6"
+  },
+  "id": "Jowxjqga1sBDxbsT",
+  "tags": []
+}

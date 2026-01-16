@@ -1,1 +1,98 @@
-"{\n  \"name\": \"Laporin - Report Submission Automation v1\",\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"httpMethod\": \"POST\",\n        \"path\": \"report\",\n        \"options\": {}\n      },\n      \"name\": \"Webhook Trigger\",\n      \"type\": \"n8n-nodes-base.webhook\",\n      \"typeVersion\": 1,\n      \"position\": [\n        200,\n        300\n      ]\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"append\",\n        \"sheetId\": \"1AbCdEfGhIjKlMnOpQrStUvWxYz1234567890\",\n        \"range\": \"Reports\",\n        \"options\": {},\n        \"valueInputMode\": \"USER_ENTERED\",\n        \"fields\": \"Username,Description,Location,Media URL,AI Check,Status\",\n        \"dataProperty\": \"json\"\n      },\n      \"name\": \"Google Sheets Append\",\n      \"type\": \"n8n-nodes-base.googleSheets\",\n      \"typeVersion\": 2,\n      \"position\": [\n        800,\n        300\n      ]\n    },\n    {\n      \"parameters\": {\n        \"chatId\": \"-1009876543210\",\n        \"text\": \"\\ud83d\\udea8 *Laporan baru dari @{{$json[\\\"username\\\"]}}*\\n\\ud83d\\udccd *Lokasi:* {{$json[\\\"location\\\"]}}\\n\\ud83d\\udcdd *Deskripsi:* {{$json[\\\"description\\\"]}}\\n\\ud83e\\udd16 *AI Check:* {{$json[\\\"ai_check\\\"]}}\\n\\ud83d\\udcf8 *Media:* [Lihat Gambar]({{$json[\\\"media_url\\\"]}})\",\n        \"additionalFields\": {\n          \"parse_mode\": \"Markdown\"\n        }\n      },\n      \"name\": \"Telegram Notification\",\n      \"type\": \"n8n-nodes-base.telegram\",\n      \"typeVersion\": 1,\n      \"position\": [\n        800,\n        500\n      ],\n      \"credentials\": {\n        \"telegramApi\": {\n          \"id\": \"123456\",\n          \"name\": \"LaporinBot\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"functionCode\": \"const status = $json['ai_check'] === 'Gambar asli' ? '\\u2705 Asli' : '\\u26a0\\ufe0f Diduga AI-generated';\\nreturn [{ ...$json, Status: status }];\"\n      },\n      \"name\": \"Check AI Result\",\n      \"type\": \"n8n-nodes-base.function\",\n      \"typeVersion\": 1,\n      \"position\": [\n        500,\n        300\n      ]\n    }\n  ],\n  \"connections\": {\n    \"Webhook Trigger\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Check AI Result\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Check AI Result\": {\n      \"main\": [\n        {\n          \"node\": \"Google Sheets Append\",\n          \"type\": \"main\",\n          \"index\": 0\n        },\n        {\n          \"node\": \"Telegram Notification\",\n          \"type\": \"main\",\n          \"index\": 0\n        }\n      ]\n    }\n  }\n}"
+{
+  "name": "Laporin - Report Submission Automation v1",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "report",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "1AbCdEfGhIjKlMnOpQrStUvWxYz1234567890",
+        "range": "Reports",
+        "options": {},
+        "valueInputMode": "USER_ENTERED",
+        "fields": "Username,Description,Location,Media URL,AI Check,Status",
+        "dataProperty": "json"
+      },
+      "name": "Google Sheets Append",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "-1009876543210",
+        "text": "🚨 *Laporan baru dari @{{$json[\"username\"]}}*\n📍 *Lokasi:* {{$json[\"location\"]}}\n📝 *Deskripsi:* {{$json[\"description\"]}}\n🤖 *AI Check:* {{$json[\"ai_check\"]}}\n📸 *Media:* [Lihat Gambar]({{$json[\"media_url\"]}})",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "name": "Telegram Notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        800,
+        500
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "123456",
+          "name": "LaporinBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const status = $json['ai_check'] === 'Gambar asli' ? '✅ Asli' : '⚠️ Diduga AI-generated';\nreturn [{ ...$json, Status: status }];"
+      },
+      "name": "Check AI Result",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check AI Result": {
+      "main": [
+        {
+          "node": "Google Sheets Append",
+          "type": "main",
+          "index": 0
+        },
+        {
+          "node": "Telegram Notification",
+          "type": "main",
+          "index": 0
+        }
+      ]
+    }
+  }
+}

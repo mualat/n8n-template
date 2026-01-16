@@ -1,1 +1,89 @@
-"{\n  \"name\": \"Simple Error Monitoring\",\n  \"nodes\": [\n    {\n      \"parameters\": {},\n      \"name\": \"Error Trigger\",\n      \"type\": \"n8n-nodes-base.errorTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [\n        -448,\n        208\n      ],\n      \"id\": \"f59e53ff-7911-4aea-b423-6d0e09bae80d\"\n    },\n    {\n      \"parameters\": {\n        \"chatId\": \"<your_chat_id>\",\n        \"text\": \"={{ $json.message }}\",\n        \"additionalFields\": {\n          \"parse_mode\": \"HTML\"\n        }\n      },\n      \"name\": \"Notify Telegram\",\n      \"type\": \"n8n-nodes-base.telegram\",\n      \"typeVersion\": 1,\n      \"position\": [\n        0,\n        208\n      ],\n      \"id\": \"c4a439d1-7a4b-4e1c-8700-e330659752e0\",\n      \"webhookId\": \"13c616bf-a3ad-4035-998a-1dfe6021b89f\",\n      \"credentials\": {\n        \"telegramApi\": {\n          \"id\": \"dRZHNcPa8EcTYTY2\",\n          \"name\": \"Khaisa Monitoring Bot\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"jsCode\": \"// Hello, this workflow is made by khaisa. please visit shop.khaisa.com for more tailored support\\n\\n// Perfect error access untuk N8N v1.99.1\\nconst errorData = $input.first().json;\\nconst execution = errorData.execution;\\nconst workflow = errorData.workflow;\\nconst error = execution.error;\\n\\nconst message = `🚨 <b>WORKFLOW ERROR</b>\\\\n\\\\n` +\\n  `📋 Workflow: <b>${workflow.name}</b>\\\\n` +\\n  `⚙️ Node: <code>${error.node.name}</code>\\\\n` +\\n  `❌ Error: <code>${error.message}</code>\\\\n` +\\n  `📝 Description: <i>${error.description}</i>\\\\n` +\\n  `🕐 Waktu: ${new Date(error.timestamp).toLocaleString('id-ID')}\\\\n` +\\n  `🔍 Execution: <a href=\\\"${execution.url}\\\">${execution.id}</a>\\\\n` +\\n  `⚠️ Level: ${error.level.toUpperCase()}`;\\n\\nreturn {\\n  message: message,\\n  parse_mode: 'HTML',\\n  chat_id: '621412350'\\n};\"\n      },\n      \"type\": \"n8n-nodes-base.code\",\n      \"typeVersion\": 2,\n      \"position\": [\n        -224,\n        208\n      ],\n      \"id\": \"15d5e167-d41f-4348-b3ea-720a2c3e28f8\",\n      \"name\": \"Prepare Messages\"\n    }\n  ],\n  \"pinData\": {},\n  \"connections\": {\n    \"Error Trigger\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Prepare Messages\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Prepare Messages\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Notify Telegram\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    }\n  },\n  \"active\": false,\n  \"settings\": {\n    \"executionOrder\": \"v1\"\n  },\n  \"versionId\": \"76f868a8-331a-409e-8590-16f795a06b9e\",\n  \"meta\": {\n    \"templateCredsSetupCompleted\": true,\n    \"instanceId\": \"c2650793f644091dc80fb900fe63448ad1f4b774008de9608064d67294f8307c\"\n  },\n  \"id\": \"pdD12VoTlHxhfVZ4\",\n  \"tags\": []\n}"
+{
+  "name": "Simple Error Monitoring",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        208
+      ],
+      "id": "f59e53ff-7911-4aea-b423-6d0e09bae80d"
+    },
+    {
+      "parameters": {
+        "chatId": "<your_chat_id>",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Notify Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        0,
+        208
+      ],
+      "id": "c4a439d1-7a4b-4e1c-8700-e330659752e0",
+      "webhookId": "13c616bf-a3ad-4035-998a-1dfe6021b89f",
+      "credentials": {
+        "telegramApi": {
+          "id": "dRZHNcPa8EcTYTY2",
+          "name": "Khaisa Monitoring Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Hello, this workflow is made by khaisa. please visit shop.khaisa.com for more tailored support\n\n// Perfect error access untuk N8N v1.99.1\nconst errorData = $input.first().json;\nconst execution = errorData.execution;\nconst workflow = errorData.workflow;\nconst error = execution.error;\n\nconst message = `🚨 <b>WORKFLOW ERROR</b>\\n\\n` +\n  `📋 Workflow: <b>${workflow.name}</b>\\n` +\n  `⚙️ Node: <code>${error.node.name}</code>\\n` +\n  `❌ Error: <code>${error.message}</code>\\n` +\n  `📝 Description: <i>${error.description}</i>\\n` +\n  `🕐 Waktu: ${new Date(error.timestamp).toLocaleString('id-ID')}\\n` +\n  `🔍 Execution: <a href=\"${execution.url}\">${execution.id}</a>\\n` +\n  `⚠️ Level: ${error.level.toUpperCase()}`;\n\nreturn {\n  message: message,\n  parse_mode: 'HTML',\n  chat_id: '621412350'\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        208
+      ],
+      "id": "15d5e167-d41f-4348-b3ea-720a2c3e28f8",
+      "name": "Prepare Messages"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Messages": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "76f868a8-331a-409e-8590-16f795a06b9e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c2650793f644091dc80fb900fe63448ad1f4b774008de9608064d67294f8307c"
+  },
+  "id": "pdD12VoTlHxhfVZ4",
+  "tags": []
+}

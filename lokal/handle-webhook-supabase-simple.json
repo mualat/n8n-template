@@ -1,1 +1,274 @@
-"{\n  \"name\": \"Handle Xendit Webhook\",\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"httpMethod\": \"POST\",\n        \"path\": \"1174a08b-501b-488a-bc53-0cf0daadd818\",\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.webhook\",\n      \"typeVersion\": 2,\n      \"position\": [\n        -40,\n        0\n      ],\n      \"id\": \"7c7d0d10-1ad1-4061-8110-4e060d8853d6\",\n      \"name\": \"Webhook\",\n      \"webhookId\": \"1174a08b-501b-488a-bc53-0cf0daadd818\"\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"update\",\n        \"tableId\": \"payments\",\n        \"filters\": {\n          \"conditions\": [\n            {\n              \"keyName\": \"id\",\n              \"condition\": \"eq\",\n              \"keyValue\": \"={{ $json.body.external_id }}\"\n            }\n          ]\n        },\n        \"fieldsUi\": {\n          \"fieldValues\": [\n            {\n              \"fieldId\": \"status\",\n              \"fieldValue\": \"paid\"\n            }\n          ]\n        }\n      },\n      \"type\": \"n8n-nodes-base.supabase\",\n      \"typeVersion\": 1,\n      \"position\": [\n        220,\n        0\n      ],\n      \"id\": \"3451e8c4-c3f8-4d9a-9268-4d80b65bc7f6\",\n      \"name\": \"Update Payment to Paid\",\n      \"credentials\": {\n        \"supabaseApi\": {\n          \"id\": \"MqSrBhq5FpX3BF3U\",\n          \"name\": \"Supabase account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"tableId\": \"transactions\",\n        \"fieldsUi\": {\n          \"fieldValues\": [\n            {\n              \"fieldId\": \"user_id\",\n              \"fieldValue\": \"={{ $json.user_id }}\"\n            },\n            {\n              \"fieldId\": \"type\",\n              \"fieldValue\": \"topup\"\n            },\n            {\n              \"fieldId\": \"amount\",\n              \"fieldValue\": \"={{ $json.amount }}\"\n            },\n            {\n              \"fieldId\": \"description\",\n              \"fieldValue\": \"=Topup {{ $json.amount.format() }}\"\n            }\n          ]\n        }\n      },\n      \"type\": \"n8n-nodes-base.supabase\",\n      \"typeVersion\": 1,\n      \"position\": [\n        440,\n        0\n      ],\n      \"id\": \"6ff2fe27-35c0-4995-afaf-f713333a3386\",\n      \"name\": \"Insert Transactions\",\n      \"credentials\": {\n        \"supabaseApi\": {\n          \"id\": \"MqSrBhq5FpX3BF3U\",\n          \"name\": \"Supabase account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"update\",\n        \"tableId\": \"balances\",\n        \"filters\": {\n          \"conditions\": [\n            {\n              \"keyName\": \"user_id\",\n              \"condition\": \"eq\",\n              \"keyValue\": \"={{ $json.user_id }}\"\n            }\n          ]\n        },\n        \"fieldsUi\": {\n          \"fieldValues\": [\n            {\n              \"fieldId\": \"balance\",\n              \"fieldValue\": \"={{ $json.balance + $('Insert Transactions').item.json.amount  }}\"\n            }\n          ]\n        }\n      },\n      \"type\": \"n8n-nodes-base.supabase\",\n      \"typeVersion\": 1,\n      \"position\": [\n        900,\n        0\n      ],\n      \"id\": \"41aa9292-b227-4c74-861c-081d09ab7c38\",\n      \"name\": \"Update Balance\",\n      \"credentials\": {\n        \"supabaseApi\": {\n          \"id\": \"MqSrBhq5FpX3BF3U\",\n          \"name\": \"Supabase account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"get\",\n        \"tableId\": \"balances\",\n        \"filters\": {\n          \"conditions\": [\n            {\n              \"keyName\": \"user_id\",\n              \"keyValue\": \"={{ $json.user_id }}\"\n            }\n          ]\n        }\n      },\n      \"type\": \"n8n-nodes-base.supabase\",\n      \"typeVersion\": 1,\n      \"position\": [\n        660,\n        0\n      ],\n      \"id\": \"c67bc63f-1451-4e68-b438-3a9227110c24\",\n      \"name\": \"Get a row\",\n      \"credentials\": {\n        \"supabaseApi\": {\n          \"id\": \"MqSrBhq5FpX3BF3U\",\n          \"name\": \"Supabase account\"\n        }\n      }\n    }\n  ],\n  \"pinData\": {\n    \"Webhook\": [\n      {\n        \"json\": {\n          \"headers\": {\n            \"host\": \"n8n-patuaecdsfbr.pempek.sumopod.my.id\",\n            \"user-agent\": \"axios/1.10.0\",\n            \"content-length\": \"579\",\n            \"accept\": \"application/json, text/plain, */*\",\n            \"accept-encoding\": \"gzip, br\",\n            \"cdn-loop\": \"cloudflare; loops=1\",\n            \"cf-connecting-ip\": \"52.89.130.89\",\n            \"cf-ipcountry\": \"US\",\n            \"cf-ray\": \"9686865d0d85a60a-PDX\",\n            \"cf-visitor\": \"{\\\"scheme\\\":\\\"https\\\"}\",\n            \"content-type\": \"application/json\",\n            \"webhook-id\": \"49d27bd3-bf1e-48bd-80fb-8957bb7e194a\",\n            \"x-callback-token\": \"01011b87ddd5e901ca13d05fd2c19d4cc9fabe0ae46bea526f07d8cf0730b7ef\",\n            \"x-forwarded-for\": \"52.89.130.89, 172.68.174.145\",\n            \"x-forwarded-host\": \"n8n-patuaecdsfbr.pempek.sumopod.my.id\",\n            \"x-forwarded-port\": \"443\",\n            \"x-forwarded-proto\": \"https\",\n            \"x-forwarded-server\": \"c65e959e7398\",\n            \"x-real-ip\": \"172.68.174.145\"\n          },\n          \"params\": {},\n          \"query\": {},\n          \"body\": {\n            \"id\": \"688ce1a1b7aa506fdff88fc0\",\n            \"external_id\": \"4ff66ba5-af96-4002-9a03-e9553e7e9d59\",\n            \"user_id\": \"5df0a4b72b177628f490c913\",\n            \"payment_method\": \"QR_CODE\",\n            \"status\": \"PAID\",\n            \"merchant_name\": \"Ariaseta Setia Alam\",\n            \"amount\": 50000,\n            \"paid_amount\": 50000,\n            \"paid_at\": \"2025-08-01T15:56:16.460Z\",\n            \"is_high\": false,\n            \"created\": \"2025-08-01T15:47:45.965Z\",\n            \"updated\": \"2025-08-01T15:56:18.264Z\",\n            \"currency\": \"IDR\",\n            \"payment_channel\": \"QRIS\",\n            \"payment_id\": \"qrpy_baa04e86-4218-4d52-9dd6-6cdf43e310df\",\n            \"payment_method_id\": \"pm-66be96fc-ef1d-4ddf-ab32-e018e0ba579a\",\n            \"payment_details\": {\n              \"receipt_id\": \"\",\n              \"source\": \"DANA\"\n            }\n          },\n          \"webhookUrl\": \"https://n8n-patuaecdsfbr.pempek.sumopod.my.id/webhook/1174a08b-501b-488a-bc53-0cf0daadd818\",\n          \"executionMode\": \"production\"\n        }\n      }\n    ]\n  },\n  \"connections\": {\n    \"Webhook\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Update Payment to Paid\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Update Payment to Paid\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Insert Transactions\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Insert Transactions\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Get a row\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Get a row\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Update Balance\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    }\n  },\n  \"active\": true,\n  \"settings\": {\n    \"executionOrder\": \"v1\"\n  },\n  \"versionId\": \"ce5947c4-bbd3-4e8a-bfbe-f5c3b8bcaa99\",\n  \"meta\": {\n    \"templateCredsSetupCompleted\": true,\n    \"instanceId\": \"8bd62d28c35c0b4ad404d6d3f48d48f7160cc529a80ebb7193cecc134eb339d7\"\n  },\n  \"id\": \"AAKC4Dn0kKMgQLGp\",\n  \"tags\": []\n}"
+{
+  "name": "Handle Xendit Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1174a08b-501b-488a-bc53-0cf0daadd818",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        0
+      ],
+      "id": "7c7d0d10-1ad1-4061-8110-4e060d8853d6",
+      "name": "Webhook",
+      "webhookId": "1174a08b-501b-488a-bc53-0cf0daadd818"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "payments",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.external_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "paid"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "3451e8c4-c3f8-4d9a-9268-4d80b65bc7f6",
+      "name": "Update Payment to Paid",
+      "credentials": {
+        "supabaseApi": {
+          "id": "MqSrBhq5FpX3BF3U",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "transactions",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.user_id }}"
+            },
+            {
+              "fieldId": "type",
+              "fieldValue": "topup"
+            },
+            {
+              "fieldId": "amount",
+              "fieldValue": "={{ $json.amount }}"
+            },
+            {
+              "fieldId": "description",
+              "fieldValue": "=Topup {{ $json.amount.format() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ],
+      "id": "6ff2fe27-35c0-4995-afaf-f713333a3386",
+      "name": "Insert Transactions",
+      "credentials": {
+        "supabaseApi": {
+          "id": "MqSrBhq5FpX3BF3U",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "balances",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "balance",
+              "fieldValue": "={{ $json.balance + $('Insert Transactions').item.json.amount  }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        900,
+        0
+      ],
+      "id": "41aa9292-b227-4c74-861c-081d09ab7c38",
+      "name": "Update Balance",
+      "credentials": {
+        "supabaseApi": {
+          "id": "MqSrBhq5FpX3BF3U",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "balances",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        660,
+        0
+      ],
+      "id": "c67bc63f-1451-4e68-b438-3a9227110c24",
+      "name": "Get a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "MqSrBhq5FpX3BF3U",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-patuaecdsfbr.pempek.sumopod.my.id",
+            "user-agent": "axios/1.10.0",
+            "content-length": "579",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "52.89.130.89",
+            "cf-ipcountry": "US",
+            "cf-ray": "9686865d0d85a60a-PDX",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "content-type": "application/json",
+            "webhook-id": "49d27bd3-bf1e-48bd-80fb-8957bb7e194a",
+            "x-callback-token": "01011b87ddd5e901ca13d05fd2c19d4cc9fabe0ae46bea526f07d8cf0730b7ef",
+            "x-forwarded-for": "52.89.130.89, 172.68.174.145",
+            "x-forwarded-host": "n8n-patuaecdsfbr.pempek.sumopod.my.id",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "c65e959e7398",
+            "x-real-ip": "172.68.174.145"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "id": "688ce1a1b7aa506fdff88fc0",
+            "external_id": "4ff66ba5-af96-4002-9a03-e9553e7e9d59",
+            "user_id": "5df0a4b72b177628f490c913",
+            "payment_method": "QR_CODE",
+            "status": "PAID",
+            "merchant_name": "Ariaseta Setia Alam",
+            "amount": 50000,
+            "paid_amount": 50000,
+            "paid_at": "2025-08-01T15:56:16.460Z",
+            "is_high": false,
+            "created": "2025-08-01T15:47:45.965Z",
+            "updated": "2025-08-01T15:56:18.264Z",
+            "currency": "IDR",
+            "payment_channel": "QRIS",
+            "payment_id": "qrpy_baa04e86-4218-4d52-9dd6-6cdf43e310df",
+            "payment_method_id": "pm-66be96fc-ef1d-4ddf-ab32-e018e0ba579a",
+            "payment_details": {
+              "receipt_id": "",
+              "source": "DANA"
+            }
+          },
+          "webhookUrl": "https://n8n-patuaecdsfbr.pempek.sumopod.my.id/webhook/1174a08b-501b-488a-bc53-0cf0daadd818",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Update Payment to Paid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Payment to Paid": {
+      "main": [
+        [
+          {
+            "node": "Insert Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Transactions": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Update Balance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ce5947c4-bbd3-4e8a-bfbe-f5c3b8bcaa99",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8bd62d28c35c0b4ad404d6d3f48d48f7160cc529a80ebb7193cecc134eb339d7"
+  },
+  "id": "AAKC4Dn0kKMgQLGp",
+  "tags": []
+}

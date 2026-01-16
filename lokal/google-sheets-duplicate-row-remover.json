@@ -1,1 +1,200 @@
-"{\n  \"name\": \"Remove sheet duplicated rows\",\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"authentication\": \"serviceAccount\",\n        \"documentId\": {\n          \"__rl\": true,\n          \"value\": \"={{ $json['Sheet URL'] }}\",\n          \"mode\": \"url\"\n        },\n        \"sheetName\": {\n          \"__rl\": true,\n          \"value\": \"={{ $json['Sheet Name'] }}\",\n          \"mode\": \"name\"\n        },\n        \"options\": {}\n      },\n      \"id\": \"b55a75a4-2554-4db5-ae15-01c4d88b45ed\",\n      \"name\": \"Read Google Sheet\",\n      \"type\": \"n8n-nodes-base.googleSheets\",\n      \"typeVersion\": 4,\n      \"position\": [\n        100,\n        -200\n      ],\n      \"credentials\": {\n        \"googleApi\": {\n          \"id\": \"rEtNfSq7ZK6xyy9o\",\n          \"name\": \"Zaduna Google Service Account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"jsCode\": \"// Get all items from Google Sheets\\nconst items = $input.all();\\nconst uniqueColumnName = $('On form submission').first().json['Unique Column'];\\n\\nconsole.log(uniqueColumnName);\\n\\n// Create a map to track unique data and row numbers\\nconst uniqueDataMap = new Map();\\nconst rowsToDelete = [];\\n\\n// Loop through items to find duplicate data\\nitems.forEach((item, index) => {\\n  // Get unique data (adjust field name if different in your sheet)\\n  const uniqueData = item.json[uniqueColumnName];\\n\\n  console.log(uniqueData);\\n\\n  // Skip empty data\\n  if (!uniqueData || uniqueData.trim() === '') {\\n    return;\\n  }\\n  \\n  // Row number in sheet (index + 2 because of header row and 0-based index)\\n  const rowNumber = index + 2;\\n  \\n  if (uniqueDataMap.has(uniqueData)) {\\n    // This is a duplicate data, add to deletion list\\n    rowsToDelete.push({\\n      rowNumber: rowNumber,\\n      data: item.json\\n    });\\n  } else {\\n    // First occurrence of this data, track it\\n    uniqueDataMap.set(uniqueData, {\\n      rowNumber: rowNumber,\\n      data: item.json\\n    });\\n  }\\n});\\n\\n// Sort rows to delete from highest to lowest (bottom to top)\\nrowsToDelete.sort((a, b) => b.rowNumber - a.rowNumber);\\n\\nconsole.log(`Found ${rowsToDelete.length} duplicate rows to delete`);\\n\\nconst results = [];\\nfor (let idx = 0; idx < rowsToDelete.length; idx++) {\\n  const item = rowsToDelete[idx];\\n  results.push({\\n    json: {\\n      rowNumber: item.rowNumber,\\n      data: item.data\\n    },\\n    pairedItem: idx\\n  })\\n}\\n\\nreturn results;\\n\"\n      },\n      \"id\": \"ef5a1d63-cab8-4517-b2bf-d8039ee4cfa0\",\n      \"name\": \"Find Rows To Delete\",\n      \"type\": \"n8n-nodes-base.code\",\n      \"typeVersion\": 2,\n      \"position\": [\n        320,\n        -200\n      ],\n      \"alwaysOutputData\": true\n    },\n    {\n      \"parameters\": {\n        \"authentication\": \"serviceAccount\",\n        \"operation\": \"delete\",\n        \"documentId\": {\n          \"__rl\": true,\n          \"value\": \"={{ $('On form submission').item.json['Sheet URL'] }}\",\n          \"mode\": \"url\"\n        },\n        \"sheetName\": {\n          \"__rl\": true,\n          \"value\": \"={{ $('On form submission').item.json['Sheet Name'] }}\",\n          \"mode\": \"name\"\n        },\n        \"startIndex\": \"={{ $json.rowNumber }}\"\n      },\n      \"type\": \"n8n-nodes-base.googleSheets\",\n      \"typeVersion\": 4.6,\n      \"position\": [\n        760,\n        -200\n      ],\n      \"id\": \"41bf1a82-39c0-468b-910d-97695ce14791\",\n      \"name\": \"Delete duplicated rows\",\n      \"credentials\": {\n        \"googleApi\": {\n          \"id\": \"rEtNfSq7ZK6xyy9o\",\n          \"name\": \"Zaduna Google Service Account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"options\": {\n            \"caseSensitive\": true,\n            \"leftValue\": \"\",\n            \"typeValidation\": \"strict\",\n            \"version\": 2\n          },\n          \"conditions\": [\n            {\n              \"id\": \"bc79a959-fde2-4a71-9b75-c56a372e8443\",\n              \"leftValue\": \"={{ $json }}\",\n              \"rightValue\": \"\",\n              \"operator\": {\n                \"type\": \"object\",\n                \"operation\": \"notEmpty\",\n                \"singleValue\": true\n              }\n            }\n          ],\n          \"combinator\": \"and\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 2.2,\n      \"position\": [\n        540,\n        -200\n      ],\n      \"id\": \"a5b8c757-173b-4eeb-b7e7-bd8ed66fd0e0\",\n      \"name\": \"If not empty\",\n      \"alwaysOutputData\": false\n    },\n    {\n      \"parameters\": {\n        \"formTitle\": \"Remove Duplicated Rows\",\n        \"formFields\": {\n          \"values\": [\n            {\n              \"fieldLabel\": \"Sheet URL\"\n            },\n            {\n              \"fieldLabel\": \"Sheet Name\"\n            },\n            {\n              \"fieldLabel\": \"Unique Column\"\n            }\n          ]\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.formTrigger\",\n      \"typeVersion\": 2.2,\n      \"position\": [\n        -120,\n        -200\n      ],\n      \"id\": \"c4c38642-1090-4555-8ae7-c53a454a98be\",\n      \"name\": \"On form submission\",\n      \"webhookId\": \"f6dbf604-8a45-4896-a194-654e4e4a2fec\"\n    }\n  ],\n  \"pinData\": {},\n  \"connections\": {\n    \"Read Google Sheet\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Find Rows To Delete\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Find Rows To Delete\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"If not empty\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"If not empty\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Delete duplicated rows\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"On form submission\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Read Google Sheet\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    }\n  },\n  \"active\": false,\n  \"settings\": {\n    \"executionOrder\": \"v1\"\n  },\n  \"versionId\": \"e8e0629d-39a2-4513-a338-12414f0933c4\",\n  \"meta\": {\n    \"instanceId\": \"5bf25996fd1cc435db167af8b4b67ceff45cfb1b6c18ebf1123c1e309390a269\"\n  },\n  \"id\": \"FqDj4K55ZRpy8Cnl\",\n  \"tags\": []\n}"
+{
+  "name": "Remove sheet duplicated rows",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json['Sheet URL'] }}",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json['Sheet Name'] }}",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "b55a75a4-2554-4db5-ae15-01c4d88b45ed",
+      "name": "Read Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        100,
+        -200
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "rEtNfSq7ZK6xyy9o",
+          "name": "Zaduna Google Service Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from Google Sheets\nconst items = $input.all();\nconst uniqueColumnName = $('On form submission').first().json['Unique Column'];\n\nconsole.log(uniqueColumnName);\n\n// Create a map to track unique data and row numbers\nconst uniqueDataMap = new Map();\nconst rowsToDelete = [];\n\n// Loop through items to find duplicate data\nitems.forEach((item, index) => {\n  // Get unique data (adjust field name if different in your sheet)\n  const uniqueData = item.json[uniqueColumnName];\n\n  console.log(uniqueData);\n\n  // Skip empty data\n  if (!uniqueData || uniqueData.trim() === '') {\n    return;\n  }\n  \n  // Row number in sheet (index + 2 because of header row and 0-based index)\n  const rowNumber = index + 2;\n  \n  if (uniqueDataMap.has(uniqueData)) {\n    // This is a duplicate data, add to deletion list\n    rowsToDelete.push({\n      rowNumber: rowNumber,\n      data: item.json\n    });\n  } else {\n    // First occurrence of this data, track it\n    uniqueDataMap.set(uniqueData, {\n      rowNumber: rowNumber,\n      data: item.json\n    });\n  }\n});\n\n// Sort rows to delete from highest to lowest (bottom to top)\nrowsToDelete.sort((a, b) => b.rowNumber - a.rowNumber);\n\nconsole.log(`Found ${rowsToDelete.length} duplicate rows to delete`);\n\nconst results = [];\nfor (let idx = 0; idx < rowsToDelete.length; idx++) {\n  const item = rowsToDelete[idx];\n  results.push({\n    json: {\n      rowNumber: item.rowNumber,\n      data: item.data\n    },\n    pairedItem: idx\n  })\n}\n\nreturn results;\n"
+      },
+      "id": "ef5a1d63-cab8-4517-b2bf-d8039ee4cfa0",
+      "name": "Find Rows To Delete",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -200
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('On form submission').item.json['Sheet URL'] }}",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('On form submission').item.json['Sheet Name'] }}",
+          "mode": "name"
+        },
+        "startIndex": "={{ $json.rowNumber }}"
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        760,
+        -200
+      ],
+      "id": "41bf1a82-39c0-468b-910d-97695ce14791",
+      "name": "Delete duplicated rows",
+      "credentials": {
+        "googleApi": {
+          "id": "rEtNfSq7ZK6xyy9o",
+          "name": "Zaduna Google Service Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bc79a959-fde2-4a71-9b75-c56a372e8443",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        540,
+        -200
+      ],
+      "id": "a5b8c757-173b-4eeb-b7e7-bd8ed66fd0e0",
+      "name": "If not empty",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "formTitle": "Remove Duplicated Rows",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Sheet URL"
+            },
+            {
+              "fieldLabel": "Sheet Name"
+            },
+            {
+              "fieldLabel": "Unique Column"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -120,
+        -200
+      ],
+      "id": "c4c38642-1090-4555-8ae7-c53a454a98be",
+      "name": "On form submission",
+      "webhookId": "f6dbf604-8a45-4896-a194-654e4e4a2fec"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Read Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Find Rows To Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Rows To Delete": {
+      "main": [
+        [
+          {
+            "node": "If not empty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If not empty": {
+      "main": [
+        [
+          {
+            "node": "Delete duplicated rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Read Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e8e0629d-39a2-4513-a338-12414f0933c4",
+  "meta": {
+    "instanceId": "5bf25996fd1cc435db167af8b4b67ceff45cfb1b6c18ebf1123c1e309390a269"
+  },
+  "id": "FqDj4K55ZRpy8Cnl",
+  "tags": []
+}
